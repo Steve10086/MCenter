@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MCenter</string>
+    <string name="background">background</string>
+    <string name="setting_ic">setting</string>
+    <string name="user_info_ic">user info</string>
+    <string name="title">title</string>
 </resources>
