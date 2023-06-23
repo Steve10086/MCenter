@@ -5,6 +5,6 @@ import androidx.room.RoomDatabase
 import com.astune.mcenter.`object`.Dao.DeviceDao
 
 @Database(entities = [Device::class], version = 1, exportSchema = false)
-abstract class AppDatabase: RoomDatabase() {
+abstract class MCenterDB: RoomDatabase() {
     abstract fun deviceDao(): DeviceDao
 }
