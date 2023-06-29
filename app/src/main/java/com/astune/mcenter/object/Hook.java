@@ -1,4 +1,4 @@
-package com.astune.mcenter.utils;
+package com.astune.mcenter.object;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;

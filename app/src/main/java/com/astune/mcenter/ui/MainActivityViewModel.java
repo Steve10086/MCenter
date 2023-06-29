@@ -1,25 +1,36 @@
-package com.astune.mcenter;
+package com.astune.mcenter.ui;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.MCenterDB;
-import com.astune.mcenter.object.Room.databaseBuilder;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Single;
 
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.List;
+import java.util.SimpleTimeZone;
 
 public class MainActivityViewModel extends ViewModel {
-    private MCenterDB db;
-
+    private final MCenterDB db;
+    private LiveData<String> title = new MutableLiveData<>();
 
 
     MainActivityViewModel(){
-        db = databaseBuilder.getDb();
+        db = MCenterDB.Companion.getDB();
     }
 
 
+    @SuppressLint("CheckResult")
     public List<Device> refreshDeviceData() {
         List<Device> deviceList = db.deviceDao().getAll();
 
@@ -29,7 +40,7 @@ public class MainActivityViewModel extends ViewModel {
             //set last online time
             if (isOnline(device.getIp())) {
                 device.setLastOnline(new Date(System.currentTimeMillis()).toString());
-                db.deviceDao().update(device);
+                Single.just(db.deviceDao().insert(device).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())).subscribe();
                 device.setOnLine(true);
             }
         }
