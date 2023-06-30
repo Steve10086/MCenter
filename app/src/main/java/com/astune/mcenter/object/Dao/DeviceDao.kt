@@ -14,7 +14,13 @@ interface DeviceDao {
     fun insert(device: Device): Completable
 
     @Delete
-    fun delete(device: Device)
+    fun delete(device: Device): Completable
+
+    @Query("Delete from device")
+    fun deleteAll()
+
+    @Query("DELETE FROM sqlite_sequence WHERE name = 'Device'")
+    fun resetPrimaryKey()
 }
 
 @Dao

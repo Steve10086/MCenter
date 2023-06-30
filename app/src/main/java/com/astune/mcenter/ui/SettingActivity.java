@@ -14,7 +14,7 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
         viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(SettingActivityViewModel.class);
 
-        viewModel.getData(getFilesDir().getAbsolutePath());
+        viewModel.getData(this);
 
     }
 

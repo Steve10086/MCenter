@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace 'com.astune.mcenter'
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.astune.mcenter"
         minSdk 27
-        targetSdk 34
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 

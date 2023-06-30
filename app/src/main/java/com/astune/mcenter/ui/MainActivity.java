@@ -12,11 +12,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.astune.mcenter.R;
-import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Hook;
 import com.astune.mcenter.utils.ID.activityStateID;
-
-import java.util.List;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 
 public class MainActivity extends AppCompatActivity {
     private MainActivityViewModel viewModel;
@@ -35,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView titleText;
 
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,10 @@ public class MainActivity extends AppCompatActivity {
 
         createDeviceBtn = findViewById(R.id.create_btn);
 
-
+        viewModel.deviceList.observe(this, devices -> {
+            refreshDeviceCard();
+            Log.i("Room", devices.toString());
+        });
 
         createDeviceBtn.setOnClickListener(c->{
             Log.i("icon", "clicked");
@@ -77,18 +80,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume(){
-        super.onResume();
-
-        Log.i("Main", "resumed");
-        //refreshDeviceCard();
-    }
-
     //add information page into main stage
     public void infoPageClicked() throws NoSuchMethodException {
         if (informationPage == null){
-            informationPage = new Information_page(
+            informationPage = new InformationPage(
                     new Hook[]{
                             new Hook(this.getClass().getDeclaredMethod("pageExisted"),
                                     this,
@@ -104,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void createBtnClicked() throws NoSuchMethodException {
         if (newDevicePage == null){
-            newDevicePage = new device_creation_page(new Hook[]{
+            newDevicePage = new DeviceCreationPage(new Hook[]{
                     new Hook(this.getClass().getDeclaredMethod("pageExisted"),
                             this,
                             activityStateID.ON_PAUSE)
@@ -120,10 +115,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void refreshDeviceCard(){
-        List<Device> deviceList = viewModel.refreshDeviceData();
+
     }
 
     public void pageExisted(){
+        this.viewModel.refreshDeviceList();
         this.infoBtn.setVisibility(View.VISIBLE);
         this.createDeviceBtn.setVisibility(View.VISIBLE);
     }

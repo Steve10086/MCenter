@@ -7,7 +7,7 @@
         android:background="@drawable/creation_page_back"
         android:id="@+id/device_creation_background"
         android:clickable="true"
-        tools:context=".ui.device_creation_page"
+        tools:context=".ui.DeviceCreationPage"
 >
 
     <TextView

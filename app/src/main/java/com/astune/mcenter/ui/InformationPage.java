@@ -19,21 +19,21 @@ import com.astune.mcenter.object.HookedFragment;
 import com.astune.mcenter.object.Hook;
 import com.hoko.blur.HokoBlur;
 
-public class Information_page extends HookedFragment {
+public class InformationPage extends HookedFragment {
 
     private InformationPageViewModel mViewModel;
 
     private ConstraintLayout infoBackground;
 
-    public static Information_page newInstance() {
-        return new Information_page(null);
+    public static InformationPage newInstance() {
+        return new InformationPage(null);
     }
 
-    public Information_page(Hook[] hooks) {
+    public InformationPage(Hook[] hooks) {
         super(hooks);
     }
 
-    public Information_page() {}
+    public InformationPage() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

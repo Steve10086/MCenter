@@ -16,15 +16,12 @@ import android.view.ViewGroup;
 import com.astune.mcenter.R;
 import com.astune.mcenter.object.HookedFragment;
 import com.astune.mcenter.object.Hook;
-import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.MCenterDB;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-import java.security.PrivilegedAction;
-
-public class device_creation_page extends HookedFragment {
+public class DeviceCreationPage extends HookedFragment {
 
     private DeviceCreationPageViewModel mViewModel;
     private EditText ip;
@@ -33,14 +30,14 @@ public class device_creation_page extends HookedFragment {
     private InputMethodManager inputMethodManager;
     private final CompositeDisposable disposable = new CompositeDisposable();
 
-    public device_creation_page(Hook[] hooks) {
+    public DeviceCreationPage(Hook[] hooks) {
         super(hooks);
     }
 
-    public device_creation_page() {}
+    public DeviceCreationPage() {}
 
-    public static device_creation_page newInstance() {
-        return new device_creation_page(null);
+    public static DeviceCreationPage newInstance() {
+        return new DeviceCreationPage(null);
     }
 
     @Override
@@ -81,7 +78,7 @@ public class device_creation_page extends HookedFragment {
             if (!"".equals(ip.getText().toString()) && !"".equals(name.getText().toString())) {
                 assert MCenterDB.Companion.getDB() != null;
 
-                disposable.add(MCenterDB.Companion.getDB().deviceDao().insert(new Device(0, name.getText().toString(), ip.getText().toString(), null))
+                disposable.add(mViewModel.saveEvent(name.getText().toString(), ip.getText().toString())
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(() -> {//finished event
@@ -94,6 +91,7 @@ public class device_creation_page extends HookedFragment {
                 );
 
             } else {
+                saveBtn.setEnabled(true);
                 Toast.makeText(parent.getApplicationContext(), "empty name or ip", Toast.LENGTH_SHORT).show();
             }
 
