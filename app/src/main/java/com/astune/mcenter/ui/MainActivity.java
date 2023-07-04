@@ -3,18 +3,15 @@ package com.astune.mcenter.ui;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.astune.mcenter.R;
+import com.astune.mcenter.databinding.ActivityMainBinding;
 import com.astune.mcenter.object.Hook;
-import com.astune.mcenter.utils.ID.activityStateID;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import com.astune.mcenter.utils.enums.ActivityState;
 
 public class MainActivity extends AppCompatActivity {
     private MainActivityViewModel viewModel;
@@ -27,56 +24,45 @@ public class MainActivity extends AppCompatActivity {
 
     private Fragment newDevicePage;
 
-    private ImageView infoBtn;
-
-    private ImageButton createDeviceBtn;
-
-    private TextView titleText;
-
-    private final CompositeDisposable disposable = new CompositeDisposable();
-
+    private ActivityMainBinding layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        layout = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(layout.getRoot());
 
         viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(MainActivityViewModel.class);
 
         pageManager = MainActivity.this.getSupportFragmentManager();
-
-        titleText = findViewById(R.id.title);
-
-        infoBtn = findViewById(R.id.user_info_btn);
-
-        createDeviceBtn = findViewById(R.id.create_btn);
 
         viewModel.deviceList.observe(this, devices -> {
             refreshDeviceCard();
             Log.i("Room", devices.toString());
         });
 
-        createDeviceBtn.setOnClickListener(c->{
+
+        layout.mainTitleBar.createBtn.setOnClickListener(c->{
             Log.i("icon", "clicked");
             try {
                 createBtnClicked();
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
-            infoBtn.setVisibility(View.INVISIBLE);
-            createDeviceBtn.setVisibility(View.INVISIBLE);
+            layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+            layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
         });
 
         //information_page btn
-        infoBtn.setOnClickListener(c -> {
+        layout.mainTitleBar.userInfoBtn.setOnClickListener(c -> {
             Log.i("icon", "clicked");
             try {
                 infoPageClicked();
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
-            infoBtn.setVisibility(View.INVISIBLE);
-            createDeviceBtn.setVisibility(View.INVISIBLE);
+            layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+            layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
         });
     }
 
@@ -85,9 +71,9 @@ public class MainActivity extends AppCompatActivity {
         if (informationPage == null){
             informationPage = new InformationPage(
                     new Hook[]{
-                            new Hook(this.getClass().getDeclaredMethod("pageExisted"),
+                            new Hook(this.getClass().getDeclaredMethod("infoPageExisted"),
                                     this,
-                                    activityStateID.ON_PAUSE)
+                                    ActivityState.ON_PAUSE)
                     }
                     );
         }
@@ -100,9 +86,9 @@ public class MainActivity extends AppCompatActivity {
     private void createBtnClicked() throws NoSuchMethodException {
         if (newDevicePage == null){
             newDevicePage = new DeviceCreationPage(new Hook[]{
-                    new Hook(this.getClass().getDeclaredMethod("pageExisted"),
+                    new Hook(this.getClass().getDeclaredMethod("creatingPageExisted"),
                             this,
-                            activityStateID.ON_PAUSE)
+                            ActivityState.ON_PAUSE)
             });
             pageManager = MainActivity.this.getSupportFragmentManager();
         }
@@ -118,9 +104,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void pageExisted(){
+    public void infoPageExisted(){
+        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
+        this.layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+    }
+
+    public void creatingPageExisted(){
         this.viewModel.refreshDeviceList();
-        this.infoBtn.setVisibility(View.VISIBLE);
-        this.createDeviceBtn.setVisibility(View.VISIBLE);
+        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
+        this.layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
     }
 }

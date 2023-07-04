@@ -1,8 +1,6 @@
-package com.astune.mcenter.utils.ID;
+package com.astune.mcenter.utils.enums;
 
-import androidx.room.Entity;
-
- public enum activityStateID {;
+public enum ActivityState {;
     public static final int ON_CREATE = 0;
 
     public static final int ON_PAUSE = 1;

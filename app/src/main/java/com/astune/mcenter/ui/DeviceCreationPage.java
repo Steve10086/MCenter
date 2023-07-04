@@ -74,7 +74,6 @@ public class DeviceCreationPage extends HookedFragment {
 
         saveBtn.setOnClickListener(c -> {//saving event
             saveBtn.setEnabled(false);
-            Log.i("text", ip.getText().toString());
             if (!"".equals(ip.getText().toString()) && !"".equals(name.getText().toString())) {
                 assert MCenterDB.Companion.getDB() != null;
 

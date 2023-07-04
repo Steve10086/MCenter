@@ -2,6 +2,7 @@ package com.astune.mcenter.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.util.Property;
 import androidx.room.util.FileUtil;
 
 import java.io.*;
@@ -36,7 +37,12 @@ public class PropertiesUtil {
         FileWriter writer = new FileWriter(dir);
 
         for (String key: settingMap.keySet()){
-            p.setProperty(key, settingMap.get(key));
+            try {
+                p.setProperty(key, settingMap.get(key));
+            }catch (NullPointerException e){
+                settingMap.put(key, "");
+                p.setProperty(key, settingMap.get(key));
+            }
         }
 
         p.store(writer, null);

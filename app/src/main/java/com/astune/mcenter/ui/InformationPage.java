@@ -39,7 +39,6 @@ public class InformationPage extends HookedFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(InformationPageViewModel.class);
-        // TODO: Use the ViewModel
 
         if(!mViewModel.isCreated()){
             //blur background by catching screen drawing cache
@@ -59,12 +58,7 @@ public class InformationPage extends HookedFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-
-
-
         return inflater.inflate(R.layout.fragment_information_page, container, false);
-
-
     }
 
     @Override
