@@ -3,6 +3,7 @@ package com.astune.mcenter.`object`.Dao
 import androidx.room.*
 import com.astune.mcenter.`object`.Room.Device
 import com.astune.mcenter.`object`.Room.WebLink
+import com.astune.mcenter.`object`.Room.ZeroTier
 import io.reactivex.rxjava3.core.Completable
 
 @Dao
@@ -21,6 +22,18 @@ interface DeviceDao {
 
     @Query("DELETE FROM sqlite_sequence WHERE name = 'Device'")
     fun resetPrimaryKey()
+}
+
+@Dao
+interface ZerotierDao {
+    @Query("Select * from device")
+    fun getAll():List<ZeroTier>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(device: Device): Completable
+
+    @Delete
+    fun delete(device: Device): Completable
 }
 
 @Dao

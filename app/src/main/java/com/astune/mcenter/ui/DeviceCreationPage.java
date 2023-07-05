@@ -6,16 +6,16 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.lifecycle.ViewModelProvider;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.lifecycle.ViewModelProvider;
 import com.astune.mcenter.R;
-import com.astune.mcenter.object.HookedFragment;
 import com.astune.mcenter.object.Hook;
+import com.astune.mcenter.object.HookedFragment;
 import com.astune.mcenter.object.Room.MCenterDB;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -23,29 +23,28 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class DeviceCreationPage extends HookedFragment {
 
-    private DeviceCreationPageViewModel mViewModel;
     private EditText ip;
-
     private EditText name;
     private InputMethodManager inputMethodManager;
     private final CompositeDisposable disposable = new CompositeDisposable();
+
+    private DeviceCreationPageViewModel mViewModel;
+
+    public DeviceCreationPage() {super();}
 
     public DeviceCreationPage(Hook[] hooks) {
         super(hooks);
     }
 
-    public DeviceCreationPage() {}
-
     public static DeviceCreationPage newInstance() {
-        return new DeviceCreationPage(null);
+        return new DeviceCreationPage();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(DeviceCreationPageViewModel.class);
         inputMethodManager = (InputMethodManager) parent.getSystemService(Activity.INPUT_METHOD_SERVICE);
-
+        mViewModel = (DeviceCreationPageViewModel) viewModel;
     }
 
     @Override

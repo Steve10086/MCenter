@@ -20,6 +20,8 @@ import java.util.List;
 
 public class MainActivityViewModel extends ViewModel {
     private final MCenterDB db;
+
+    private boolean isBlurred = false;
     private LiveData<String> title = new MutableLiveData<>();
 
     private final CompositeDisposable disposable = new CompositeDisposable();
@@ -27,6 +29,7 @@ public class MainActivityViewModel extends ViewModel {
     protected final LiveData<List<Device>> deviceList = new MutableLiveData<>(new ArrayList<>());
 
     MainActivityViewModel(){
+        Log.i("MainViewModel", "Started");
         db = MCenterDB.Companion.getDB();
     }
 
@@ -75,5 +78,13 @@ public class MainActivityViewModel extends ViewModel {
         }
         Log.w(ip,  "is offline");
         return false;
+    }
+
+    public boolean isBlurred() {
+        return isBlurred;
+    }
+
+    public void setBlurred(boolean blurred) {
+        isBlurred = blurred;
     }
 }

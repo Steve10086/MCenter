@@ -13,47 +13,41 @@
             android:layout_height="match_parent"
             android:id="@+id/info_background"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="45dp"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:background="#50000000"
-                      android:orientation="vertical"
-                      app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"
-                      android:layout_marginBottom="45dp" android:id="@+id/linearLayout"
-                      app:layout_constraintStart_toStartOf="parent">
-            <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="59dp">
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80000000"
+        >
 
-                <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="73dp" tools:srcCompat="@tools:sample/avatars"
-                        android:id="@+id/imageView"/>
-                <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent" android:id="@+id/textView3" android:layout_weight="1"/>
-            </RelativeLayout>
-            <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-            </LinearLayout>
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp" tools:srcCompat="@tools:sample/avatars"
+                    android:id="@+id/avatar_info"
+                    app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp" app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="45dp"/>
             <TextView
                     android:text="TextView"
+                    android:textColor="@color/grey"
                     android:layout_width="match_parent"
-                    android:layout_height="53dp" android:id="@+id/textView"/>
+                    android:layout_height="53dp" android:id="@+id/email_info"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@+id/avatar_info"
+                    app:layout_constraintTop_toBottomOf="@+id/avatar_info"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginStart="4dp" android:layout_marginEnd="4dp"/>
             <TextView
                     android:text="TextView"
+                    android:textColor="@color/grey"
                     android:layout_width="match_parent"
-                    android:layout_height="72dp" android:id="@+id/textView2"/>
-            <TextView
-                    android:text="TextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="86dp" android:id="@+id/textView5"/>
-        </LinearLayout>
+                    android:layout_height="53dp" android:id="@+id/device_num_info"
+                    app:layout_constraintTop_toBottomOf="@+id/email_info"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginStart="4dp" android:layout_marginEnd="4dp"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="160dp"
                 android:layout_height="45dp"

@@ -4,51 +4,58 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HookedFragment extends Fragment {
+    private Hook[] hooks;
 
     protected Activity parent;
-    protected List<Hook> onCreateHook = new ArrayList<>();
 
-    protected List<Hook> onPauseHook = new ArrayList<>();
+    protected HookedViewModel viewModel;
 
-    protected List<Hook> onResumeHook = new ArrayList<>();
-
-    protected List<Hook> onStartHook = new ArrayList<>();
-
-    public HookedFragment(){}
+    public HookedFragment(){
+        super();
+    }
 
     public HookedFragment(Hook[] hooks) {
-        if (hooks != null) {
-            for (Hook hook : hooks) {
-                switch (hook.getStateId()) {
-                    case 0:
-                        onCreateHook.add(hook);
-                    case 1:
-                        onPauseHook.add(hook);
-                    case 2:
-                        onResumeHook.add(hook);
-                    case 3:
-                        onStartHook.add(hook);
-                }
-            }
+        super();
+        this.hooks = hooks;
+    }
 
+
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        this.parent = requireActivity();
+
+        try {
+            viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory())
+                    .get((Class<? extends HookedViewModel>) Class.forName(getArguments().getString("viewModelClass")));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        viewModel.setHooks(hooks);
+
+        for (Hook hook: viewModel.onCreateHook){
+            try {
+                if(hook.getParameters() == null) hook.getMethod().invoke(hook.getParent()); else hook.getMethod().invoke(hook.getParent(), hook.getParameters());
+            } catch(Exception e){
+                Log.e("onCreateHook", e.getMessage());
+            }
         }
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        this.parent = requireActivity();
-        for (Hook hook: onCreateHook){
-            try {
+    public void onStart(){
+        super.onStart();
+        try {
+            for (Hook hook: viewModel.onStartHook){
                 if(hook.getParameters() == null) hook.getMethod().invoke(hook.getParent()); else hook.getMethod().invoke(hook.getParent(), hook.getParameters());
-            } catch(Exception e){
-                Log.e("onPauseHook", e.getMessage());
             }
+        }catch(Exception e){
+            Log.e("onStartHook", e.getMessage());
         }
     }
 
@@ -56,7 +63,7 @@ public class HookedFragment extends Fragment {
     public void onPause(){
         super.onPause();
         try {
-            for (Hook hook:onPauseHook){
+            for (Hook hook: viewModel.onPauseHook){
                 if(hook.getParameters() == null) hook.getMethod().invoke(hook.getParent()); else hook.getMethod().invoke(hook.getParent(), hook.getParameters());
             }
         }catch(Exception e){

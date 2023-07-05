@@ -1,5 +1,8 @@
 package com.astune.mcenter.ui;
 
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         layout = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(layout.getRoot());
 
+
         viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(MainActivityViewModel.class);
 
         pageManager = MainActivity.this.getSupportFragmentManager();
@@ -41,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
             Log.i("Room", devices.toString());
         });
 
-
         layout.mainTitleBar.createBtn.setOnClickListener(c->{
             Log.i("icon", "clicked");
             try {
@@ -49,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
-            layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
-            layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
         });
 
         //information_page btn
@@ -61,9 +62,16 @@ public class MainActivity extends AppCompatActivity {
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
-            layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
-            layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
+
         });
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(viewModel.isBlurred()){  //update ui state if rotated as info page showing
+            infoPageEntered();
+        }
     }
 
     //add information page into main stage
@@ -73,23 +81,37 @@ public class MainActivity extends AppCompatActivity {
                     new Hook[]{
                             new Hook(this.getClass().getDeclaredMethod("infoPageExisted"),
                                     this,
-                                    ActivityState.ON_PAUSE)
-                    }
+                                    ActivityState.ON_PAUSE),
+                            new Hook(this.getClass().getDeclaredMethod("infoPageEntered"),
+                                    this,
+                                    ActivityState.ON_START)
+                    }, InformationPageViewModel.class
                     );
+            Bundle bundle = new Bundle();
+            bundle.putString("viewModelClass", InformationPageViewModel.class.getName());
+            informationPage.setArguments(bundle);
         }
         transaction = pageManager.beginTransaction();
-        transaction.replace(R.id.information_container, informationPage);
+        transaction.add(R.id.information_container, informationPage);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
     private void createBtnClicked() throws NoSuchMethodException {
         if (newDevicePage == null){
-            newDevicePage = new DeviceCreationPage(new Hook[]{
-                    new Hook(this.getClass().getDeclaredMethod("creatingPageExisted"),
-                            this,
-                            ActivityState.ON_PAUSE)
-            });
+            newDevicePage = new DeviceCreationPage(
+                    new Hook[]{
+                            new Hook(this.getClass().getDeclaredMethod("creatingPageExisted"),
+                                    this,
+                                    ActivityState.ON_PAUSE),
+                            new Hook(this.getClass().getDeclaredMethod("creatingPageEntered"),
+                                    this,
+                                    ActivityState.ON_START)
+                    }
+            );
+            Bundle bundle = new Bundle();
+            bundle.putString("viewModelClass", DeviceCreationPageViewModel.class.getName());
+            newDevicePage.setArguments(bundle);
             pageManager = MainActivity.this.getSupportFragmentManager();
         }
 
@@ -104,14 +126,33 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void infoPageEntered(){
+        viewModel.setBlurred(true);
+        Log.i("MainAct", "Info entered");
+        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+        this.layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            this.layout.background.setRenderEffect(RenderEffect.createBlurEffect(25F, 25F, Shader.TileMode.CLAMP));
+        }
+    }
+
     public void infoPageExisted(){
+        this.viewModel.setBlurred(false);
         this.layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
         this.layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            this.layout.background.setRenderEffect(null);
+        }
     }
 
     public void creatingPageExisted(){
         this.viewModel.refreshDeviceList();
         this.layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
         this.layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+    }
+
+    public void creatingPageEntered(){
+        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+        this.layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
     }
 }

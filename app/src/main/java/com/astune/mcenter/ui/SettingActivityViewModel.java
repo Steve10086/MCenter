@@ -13,9 +13,7 @@ import com.astune.mcenter.utils.enums.Properties;
 import com.astune.mcenter.utils.FileUtil;
 import com.astune.mcenter.utils.PropertiesUtil;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -56,13 +54,12 @@ public class SettingActivityViewModel extends ViewModel {
         }
     }
 
-    public void setData(Context context, Map<String, String> newMap) throws IOException {
-        PropertiesUtil.setProperty(context.getFilesDir() + Environment.SETTING_PROPERTIES, newMap);
-    }
-
     public Bitmap getAvatar(Context context){
         try {
-            return BitmapFactory.decodeStream(Files.newInputStream(Paths.get(context.getFilesDir() + Environment.AVATAR_PATH)));
+            InputStream avatarStream = Files.newInputStream(Paths.get(context.getFilesDir() + Environment.AVATAR_PATH));
+            Bitmap avatar = BitmapFactory.decodeStream(avatarStream);
+            avatarStream.close();
+            return avatar;
         }catch (IOException exception){
 
             if( new File(context.getFilesDir() + Environment.AVATAR_PATH).isFile()
@@ -89,7 +86,13 @@ public class SettingActivityViewModel extends ViewModel {
         Log.i("Uri", uri.getPath());
         if( new File(context.getFilesDir() + Environment.AVATAR_PATH).isFile()
                 || new File(context.getFilesDir() + "/img").mkdirs()) {
-            BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri)).compress(Bitmap.CompressFormat.JPEG, 100, Files.newOutputStream(Paths.get(context.getFilesDir() + Environment.AVATAR_PATH)));
+            InputStream avatarInputStream = context.getContentResolver().openInputStream(uri);
+            OutputStream avatarOutputStream = Files.newOutputStream(Paths.get(context.getFilesDir() + Environment.AVATAR_PATH));
+
+            BitmapFactory.decodeStream(avatarInputStream).compress(Bitmap.CompressFormat.JPEG, 100, avatarOutputStream);
+
+            avatarInputStream.close();
+            avatarOutputStream.close();
         } else {
             FileUtil.delete(context.getFilesDir() + "/img");
         }
@@ -111,5 +114,7 @@ public class SettingActivityViewModel extends ViewModel {
     public void saveData(Context context) throws IOException {
         PropertiesUtil.setProperty(context.getFilesDir() + Environment.SETTING_PROPERTIES, settingMap.getValue());
     }
+
+
 
 }

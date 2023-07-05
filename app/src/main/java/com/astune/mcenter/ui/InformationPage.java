@@ -1,94 +1,110 @@
 package com.astune.mcenter.ui;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.lifecycle.ViewModelProvider;
 import com.astune.mcenter.R;
+import com.astune.mcenter.databinding.FragmentInformationPageBinding;
 import com.astune.mcenter.object.HookedFragment;
 import com.astune.mcenter.object.Hook;
-import com.hoko.blur.HokoBlur;
+import com.astune.mcenter.utils.PropertiesUtil;
+import com.astune.mcenter.utils.enums.Environment;
+import com.astune.mcenter.utils.enums.Properties;
+
+import java.io.IOException;
+import java.util.Map;
 
 public class InformationPage extends HookedFragment {
+    private FragmentInformationPageBinding layout;
 
     private InformationPageViewModel mViewModel;
 
-    private ConstraintLayout infoBackground;
-
-    public static InformationPage newInstance() {
-        return new InformationPage(null);
-    }
-
-    public InformationPage(Hook[] hooks) {
+    public InformationPage() {super();}
+    public InformationPage(Hook[] hooks, Class<InformationPageViewModel> informationPageViewModelClass) {
         super(hooks);
     }
 
-    public InformationPage() {}
+    public static InformationPage newInstance() {
+        return new InformationPage();
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(InformationPageViewModel.class);
-
-        if(!mViewModel.isCreated()){
-            //blur background by catching screen drawing cache
-            View mainView = parent.getWindow().getDecorView();
-            View background = parent.findViewById(R.id.background);
-            mainView.setDrawingCacheEnabled(true);
-            mViewModel.setBackPic(Bitmap.createBitmap(mainView.getDrawingCache(),
-                    0, (mainView.getHeight() - background.getHeight()) / 2, //fix the different between view height and real height
-                    background.getWidth(), background.getHeight()));
-            mainView.setDrawingCacheEnabled(false);
-            mViewModel.Created(true);
-        }
-
-
+        mViewModel = (InformationPageViewModel) viewModel;
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_information_page, container, false);
+        layout = FragmentInformationPageBinding.inflate(inflater, container, false);
+        return layout.getRoot();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-    //entry animation
-        infoBackground = parent.findViewById(R.id.blur_filter);
-        infoBackground.setBackground(new BitmapDrawable(HokoBlur.with(this.requireContext()).radius(5).blur(mViewModel.getBackPic())));
-
-        ImageButton settingBtn = parent.findViewById(R.id.setting_btn);
 
         Animation animation = AnimationUtils.loadAnimation(parent, R.anim.slide_in);
-        parent.findViewById(R.id.info_background).startAnimation(animation);
-
-
+        layout.infoBackground.startAnimation(animation);
         //info page exist event
-        infoBackground.setOnClickListener(c->{
+        layout.blurFilter.setOnClickListener(c->{
             this.getParentFragmentManager().popBackStack();
         });
 
-        settingBtn.setOnClickListener(c->{
+        layout.settingBtn.setOnClickListener(c->{
             Intent intent = new Intent(parent, SettingActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, 0);
         });
 
-    //loading data
+        setUIData();
+
+
+        //loading data
     }
 
-    private void loadInfoFromModel(){
+    @Override
+    public void onDestroyView(){
+        super.onDestroyView();
+        layout = null;
+    }
 
+    public void setUIData(){
+        try {
+            Map<String, String> dataMap = PropertiesUtil.getProperty(
+                parent.getFilesDir() + Environment.SETTING_PROPERTIES,
+                Properties.EMAIL
+            );
+            layout.emailInfo.setText(String.format("Email: \n%s", dataMap.get(Properties.EMAIL)));
+
+            String nu = null != getArguments().getString("deviceNum")? getArguments().getString("deviceNum"): "";
+            layout.deviceNumInfo.setText(String.format("You have %s devices", nu));
+
+            layout.avatarInfo.setImageBitmap(mViewModel.getAvatar(this.requireContext()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
+        if(resultCode == 0){
+            this.getParentFragmentManager().popBackStack();
+            this.onPause();
+        }
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        Log.i("infoPage", "paused");
     }
 
 }

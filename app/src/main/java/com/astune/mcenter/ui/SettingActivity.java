@@ -1,11 +1,13 @@
 package com.astune.mcenter.ui;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
@@ -34,6 +36,10 @@ public class SettingActivity extends AppCompatActivity {
 
         viewModel.getSettingMap().observe(this, map ->{
             Log.i("setting", map.get(Properties.EMAIL));
+        });
+
+        layout.setPasswordBtn.setOnClickListener(c ->{
+            onPasswordClick();
         });
 
 
@@ -78,7 +84,14 @@ public class SettingActivity extends AppCompatActivity {
     }
 
     public void onPasswordClick(){
-        Dialog setPassWord = new Dialog(this);
-        
+        AlertDialog.Builder passwordDialog = new AlertDialog.Builder(this);
+        View view = View.inflate(passwordDialog.getContext(), R.layout.setting_password_dialog, null);
+        passwordDialog
+                .setPositiveButton("save", (dialogInterface, i) -> {
+                    viewModel.updateMap(Properties.PASSWORD, ((EditText)view.findViewById(R.id.password_editor)).getText().toString());
+                })
+                .setTitle("Enter password")
+                .setView(view)
+                .create().show();
     }
 }

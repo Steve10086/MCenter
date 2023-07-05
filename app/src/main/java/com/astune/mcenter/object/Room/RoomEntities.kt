@@ -16,11 +16,21 @@ data class Device(
     @ColumnInfo (name = "ip") var ip: String,
 
     @ColumnInfo (name = "last_online") var lastOnline: String?
+
+
 ){
-
-
     @Ignore var isOnLine: Boolean = false
 }
+
+@Entity
+data class ZeroTier(
+
+    @PrimaryKey(autoGenerate = true) val id:Int,
+
+    @ColumnInfo (name = "uid") val uid:Int,
+
+    @ColumnInfo (name = "name") val name: String?
+)
 
 @Entity
 data class WebLink(
