@@ -1,7 +1,6 @@
 package com.astune.mcenter.ui;
 
-import androidx.lifecycle.ViewModel;
-import com.astune.mcenter.object.HookedViewModel;
+import com.astune.mcenter.ui.customered.HookedViewModel;
 import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.MCenterDB;
 import io.reactivex.rxjava3.core.Completable;

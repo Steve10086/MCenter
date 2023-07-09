@@ -11,15 +11,24 @@
             android:orientation="vertical"
             android:layout_width="160dp"
             android:layout_height="match_parent"
-            android:id="@+id/info_background"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
+        <com.astune.mcenter.ui.customered.ClippedBackgroundView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/info_background"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
+        />
+
+
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#80000000"
+                android:background="#40000000"
+                app:layout_constraintBottom_toBottomOf="parent"
         >
 
             <ImageView

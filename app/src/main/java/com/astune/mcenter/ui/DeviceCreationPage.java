@@ -2,6 +2,8 @@ package com.astune.mcenter.ui;
 
 import android.app.Activity;
 import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,10 +14,9 @@ import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import androidx.lifecycle.ViewModelProvider;
 import com.astune.mcenter.R;
 import com.astune.mcenter.object.Hook;
-import com.astune.mcenter.object.HookedFragment;
+import com.astune.mcenter.ui.customered.HookedFragment;
 import com.astune.mcenter.object.Room.MCenterDB;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -94,6 +95,9 @@ public class DeviceCreationPage extends HookedFragment {
             }
 
         });
+
+        //Animation animation = AnimationUtils.loadAnimation(parent, R.anim.slide_out);
+        //parent.findViewById(R.id.device_creation_background).startAnimation(animation);
     }
 
     @Override

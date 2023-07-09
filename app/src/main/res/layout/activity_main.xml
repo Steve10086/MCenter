@@ -23,6 +23,7 @@
                    android:scaleType="centerCrop"
                    android:layout_gravity="center|fill"
                    android:contentDescription="@string/background"
+                   android:id="@+id/main_background_image"
         />
 
 
@@ -30,17 +31,20 @@
                  android:id="@+id/main_title_bar"/>
 
 
-        <ScrollView
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/main_scene_scroll"
                 android:clickable="true" app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="45dp"
-                app:layout_constraintStart_toStartOf="parent">
-            <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" app:srcCompat="@drawable/ic_launcher_background"
-                    android:id="@+id/imageView3"/>
-        </ScrollView>
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent">
+
+            <com.astune.mcenter.utils.DeviceCardList android:layout_width="match_parent"
+                                                     android:layout_height="match_parent"
+                                                     android:id="@+id/card_list"
+            />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout

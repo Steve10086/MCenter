@@ -1,11 +1,13 @@
 package com.astune.mcenter.ui;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -14,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.astune.mcenter.R;
 import com.astune.mcenter.databinding.ActivityMainBinding;
 import com.astune.mcenter.object.Hook;
+import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.utils.enums.ActivityState;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,21 +35,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         layout = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(layout.getRoot());
 
-
         viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(MainActivityViewModel.class);
+
+        viewModel.refreshDeviceList();
 
         pageManager = MainActivity.this.getSupportFragmentManager();
 
         viewModel.deviceList.observe(this, devices -> {
-            refreshDeviceCard();
+            layout.cardList.setCard(viewModel.deviceList.getValue());
             Log.i("Room", devices.toString());
         });
 
         layout.mainTitleBar.createBtn.setOnClickListener(c->{
-            Log.i("icon", "clicked");
             try {
                 createBtnClicked();
             } catch (NoSuchMethodException e) {
@@ -56,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
         //information_page btn
         layout.mainTitleBar.userInfoBtn.setOnClickListener(c -> {
-            Log.i("icon", "clicked");
             try {
                 infoPageClicked();
             } catch (NoSuchMethodException e) {
@@ -64,14 +68,41 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+
+        layout.cardList.setOnclickListener((device) ->{
+            Log.i("CardList", device.toString() + "clicked");
+            try {
+                deviceCardClicked(device);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            return null;
+        });
+
+
     }
 
     @Override
     public void onStart(){
         super.onStart();
-        if(viewModel.isBlurred()){  //update ui state if rotated as info page showing
-            infoPageEntered();
-        }
+
+    }
+
+    public void deviceCardClicked(Device device) throws NoSuchMethodException {
+        viewModel.title.setValue(device.getName());
+        Fragment linkPage = new LinkPage(
+                new Hook[]{
+                        new Hook(this.getClass().getDeclaredMethod("creatingPageExisted"),
+                                this,
+                                ActivityState.ON_PAUSE),
+                        new Hook(this.getClass().getDeclaredMethod("creatingPageEntered"),
+                                this,
+                                ActivityState.ON_START)
+                }
+        );
+        Bundle bundle = new Bundle(device.toBundle());
+        bundle.putString("viewModelClass", LinkPageViewModel.class.getName());
+        linkPage.setArguments(device.toBundle());
     }
 
     //add information page into main stage
@@ -85,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                             new Hook(this.getClass().getDeclaredMethod("infoPageEntered"),
                                     this,
                                     ActivityState.ON_START)
-                    }, InformationPageViewModel.class
+                    }
                     );
             Bundle bundle = new Bundle();
             bundle.putString("viewModelClass", InformationPageViewModel.class.getName());
@@ -121,38 +152,28 @@ public class MainActivity extends AppCompatActivity {
         transaction.commit();
     }
 
-
-    private void refreshDeviceCard(){
-
-    }
-
     public void infoPageEntered(){
-        viewModel.setBlurred(true);
         Log.i("MainAct", "Info entered");
-        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
-        this.layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            this.layout.background.setRenderEffect(RenderEffect.createBlurEffect(25F, 25F, Shader.TileMode.CLAMP));
-        }
+        layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+        layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
+        layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_out));
     }
 
     public void infoPageExisted(){
-        this.viewModel.setBlurred(false);
-        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
-        this.layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            this.layout.background.setRenderEffect(null);
-        }
+        Log.i("MainAct", "Info existed");
+        layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
+        layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+        layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in));
     }
 
     public void creatingPageExisted(){
-        this.viewModel.refreshDeviceList();
-        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
-        this.layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+        viewModel.refreshDeviceList();
+        layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
+        layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
     }
 
     public void creatingPageEntered(){
-        this.layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
-        this.layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
+        layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+        layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
     }
 }

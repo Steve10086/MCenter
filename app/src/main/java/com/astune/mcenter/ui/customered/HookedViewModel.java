@@ -1,6 +1,8 @@
-package com.astune.mcenter.object;
+package com.astune.mcenter.ui.customered;
 
 import androidx.lifecycle.ViewModel;
+import com.astune.mcenter.object.Hook;
+import com.astune.mcenter.utils.enums.ActivityState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +16,31 @@ public class HookedViewModel extends ViewModel {
 
     protected List<Hook> onStartHook = new ArrayList<>();
 
+    protected List<Hook> onStopHook = new ArrayList<>();
+
     public void setHooks(Hook[] hooks){
         if (hooks != null) {
             for (Hook hook : hooks) {
                 switch (hook.getStateId()) {
-                    case 0:
+                    case ActivityState.ON_CREATE:
                         onCreateHook.add(hook);
-                    case 1:
-                        onPauseHook.add(hook);
-                    case 2:
-                        onResumeHook.add(hook);
-                    case 3:
+                        break;
+
+                    case ActivityState.ON_START:
                         onStartHook.add(hook);
+                        break;
+
+                    case ActivityState.ON_PAUSE:
+                        onPauseHook.add(hook);
+                        break;
+
+                    case ActivityState.ON_RESUME:
+                        onResumeHook.add(hook);
+                        break;
+
+                    case ActivityState.ON_STOP:
+                        onStopHook.add(hook);
+                        break;
                 }
             }
 
