@@ -1,9 +1,6 @@
 package com.astune.mcenter.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
+import android.animation.*;
 import android.content.Intent;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
@@ -95,7 +92,34 @@ public class InformationPage extends HookedFragment {
 
         //info page exist event
         layout.blurFilter.setOnClickListener(c->{
-            this.getParentFragmentManager().popBackStack();
+            layout.blurFilter.setClickable(false);
+                if (!enteredFromSetting) {//using an object animator allows update background when translating
+                    Animator animator = AnimatorInflater.loadAnimator(parent, R.animator.slide_in);
+                    ((ValueAnimator) animator).addUpdateListener((var) -> { //update view as translation
+                        try {
+                            layout.infoBackground.invalidate();
+                        }catch (NullPointerException e){
+                            Log.e("infoUIAnimator", "unExpected " + e.getMessage());
+                            getParentFragmentManager().popBackStack();
+                        }
+                    });
+
+                    ((ValueAnimator) animator).setFloatValues(0, -layout.blurFilter.getWidth());
+                    animator.setTarget(layout.blurFilter);
+                    animator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(@NonNull Animator animator) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                layout.infoBackground.setRenderEffect(null);
+                            }
+                            getParentFragmentManager().popBackStack();
+                        }
+
+                    });
+                    animator.start();
+                    doOnStateHooks(ActivityState.ON_PAUSE);
+                    disableNextHook(ActivityState.ON_PAUSE);
+                }
         });
 
         //setting activity event
@@ -127,7 +151,7 @@ public class InformationPage extends HookedFragment {
 
             layout.avatarInfo.setImageBitmap(mViewModel.getAvatar(this.requireContext()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+
         }
     }
 
@@ -145,8 +169,5 @@ public class InformationPage extends HookedFragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             layout.infoBackground.setRenderEffect(null);
         }
-
-        if (!enteredFromSetting) layout.blurFilter.startAnimation(AnimationUtils.loadAnimation(parent, R.anim.slide_out));
-
     }
 }

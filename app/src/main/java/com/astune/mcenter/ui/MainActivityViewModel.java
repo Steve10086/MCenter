@@ -46,23 +46,27 @@ public class MainActivityViewModel extends ViewModel {
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
             Log.i("room", deviceList.getValue().toString());
             Log.i("room", "complete");
-            for (Device device : deviceList.getValue()) {
-                disposable.add(Completable.fromAction(() ->{
-
-                    if (isOnline(device.getIp())) {//set last online time
-                        device.setLastOnline(new Date(System.currentTimeMillis()).toString());
-                        db.deviceDao().insert(device);
-                        device.setOnLine(true);
-                    }
-
-                }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
-                            deviceList.getValue().replaceAll((d) -> (d.getId() == device.getId()) ? device : d);
-                            deviceList.setValue(deviceList.getValue());//trigger the observer
-                        }
-                ));
-            }
+            updateOnline();
         }, throwable ->  Log.e("room", throwable.getMessage())
         ));
+    }
+
+    public void updateOnline(){
+        for (Device device : deviceList.getValue()) {
+            disposable.add(Completable.fromAction(() ->{
+
+                if (isOnline(device.getIp())) {//set last online time
+                    device.setLastOnline(new Date(System.currentTimeMillis()).toString());
+                    db.deviceDao().insert(device);
+                    device.setOnLine(true);
+                }
+
+            }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
+                        deviceList.getValue().replaceAll((d) -> (d.getId() == device.getId()) ? device : d);
+                        deviceList.setValue(deviceList.getValue());//trigger the observer
+                    }
+            ));
+        }
     }
 
     private boolean isOnline(String ip){

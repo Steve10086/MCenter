@@ -6,6 +6,4 @@ public enum ActivityState {;
     public static final int ON_PAUSE = 2;
     public static final int ON_RESUME = 3;
     public static final int ON_STOP = 4;
-
-
 }

@@ -1,5 +1,7 @@
 package com.astune.mcenter.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.pm.ActivityInfo;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
@@ -7,7 +9,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -47,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         pageManager = MainActivity.this.getSupportFragmentManager();
 
         viewModel.deviceList.observe(this, devices -> {
-            layout.cardList.setCard(viewModel.deviceList.getValue());
+            layout.cardList.setCard(devices);
             Log.i("Room", devices.toString());
         });
 
@@ -83,9 +88,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStart(){
-        super.onStart();
-
+    public void onResume(){
+        super.onResume();
+        viewModel.updateOnline();
     }
 
     public void deviceCardClicked(Device device) throws NoSuchMethodException {
@@ -161,9 +166,26 @@ public class MainActivity extends AppCompatActivity {
 
     public void infoPageExisted(){
         Log.i("MainAct", "Info existed");
-        layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
-        layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
-        layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in));
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in);
+        animation.setInterpolator(new DecelerateInterpolator());
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
+                layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        layout.cardList.startAnimation(animation);
     }
 
     public void creatingPageExisted(){

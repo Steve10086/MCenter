@@ -17,6 +17,8 @@ public class HookedFragment extends Fragment {
     protected Activity parent;
 
     protected HookedViewModel viewModel;
+    private final boolean[] disableHooks = new boolean[]{false, false, false, false, false};
+    private boolean isNextHookDisabled = false;
 
     public HookedFragment(){
         super();
@@ -25,6 +27,33 @@ public class HookedFragment extends Fragment {
     public HookedFragment(Hook[] hooks) {
         super();
         this.hooks = hooks;
+    }
+
+    public void disableHook(int state){
+        switch (state){
+            case ActivityState.ON_CREATE:
+                disableHooks[0] = true;
+                break;
+            case ActivityState.ON_START:
+                disableHooks[1] = true;
+                break;
+            case ActivityState.ON_PAUSE:
+                disableHooks[2] = true;
+                break;
+            case ActivityState.ON_RESUME:
+                disableHooks[3] = true;
+                break;
+            case ActivityState.ON_STOP:
+                disableHooks[4] = true;
+                break;
+            default: throw new NoSuchElementException("unknown activity state");
+        }
+        isNextHookDisabled = true;
+    }
+
+    public void disableNextHook(int state){
+        disableHook(state);
+        isNextHookDisabled = false;
     }
 
     public void doOnStateHooks(int state){
@@ -47,12 +76,18 @@ public class HookedFragment extends Fragment {
                 break;
             default: throw new NoSuchElementException("unknown activity state");
         }
-        try {
-            for (Hook hook: doHook){
-                if(hook.getParameters() == null) hook.getMethod().invoke(hook.getParent()); else hook.getMethod().invoke(hook.getParent(), hook.getParameters());
+        if (!disableHooks[state]){
+            try {
+                for (Hook hook: doHook){
+                    if(hook.getParameters() == null) hook.getMethod().invoke(hook.getParent()); else hook.getMethod().invoke(hook.getParent(), hook.getParameters());
+                }
+            }catch(Exception e){
+                Log.e("hookedFragment", e.getMessage());
             }
-        }catch(Exception e){
-            Log.e("hookedFragment", e.getMessage());
+        }else{
+            if (!isNextHookDisabled){
+                disableHooks[state] = false;
+            }
         }
     }
 
