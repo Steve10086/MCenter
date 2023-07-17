@@ -7,6 +7,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.astune.mcenter.`object`.Link.Link
+import com.astune.mcenter.utils.enums.LinkType
 import java.util.Date
 
 @Entity
@@ -56,7 +58,19 @@ data class WebLink(
 
     @ColumnInfo val parent:Int,
 
-    @ColumnInfo val name: String,
+    @ColumnInfo(name = "name") val linkName: String,
 
     @ColumnInfo val address: String,
-)
+) : Link(){
+    override fun getName(): String {
+        return linkName
+    }
+
+    override fun getParentId(): Int {
+        return parent
+    }
+
+    override fun getType(): String {
+        return LinkType.WEB_LINK
+    }
+}
