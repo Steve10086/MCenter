@@ -19,5 +19,4 @@ public class InformationPageViewModel extends HookedViewModel {
         }
     }
 
-    // TODO: Implement the ViewModel
 }

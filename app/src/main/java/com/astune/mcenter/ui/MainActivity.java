@@ -80,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
                 deviceCardClicked(device);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
             return null;
         });
@@ -93,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         viewModel.updateOnline();
     }
 
-    public void deviceCardClicked(Device device) throws NoSuchMethodException {
+    public void deviceCardClicked(Device device) throws NoSuchMethodException, ClassNotFoundException {
         viewModel.title.setValue(device.getName());
         Fragment linkPage = new LinkPage(
                 new Hook[]{
@@ -107,7 +109,11 @@ public class MainActivity extends AppCompatActivity {
         );
         Bundle bundle = new Bundle(device.toBundle());
         bundle.putString("viewModelClass", LinkPageViewModel.class.getName());
-        linkPage.setArguments(device.toBundle());
+        linkPage.setArguments(bundle);
+        transaction = pageManager.beginTransaction();
+        transaction.add(R.id.information_container, linkPage);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     //add information page into main stage
@@ -164,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
         layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_out));
     }
 
+    //info Page exist animation, hooked into onPause()
     public void infoPageExisted(){
         Log.i("MainAct", "Info existed");
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in);

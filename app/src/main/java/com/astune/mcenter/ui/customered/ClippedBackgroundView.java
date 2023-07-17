@@ -10,11 +10,14 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import com.astune.mcenter.R;
 
-
+/**
+ * A view showing the information under it contained by sourceView as background,  keep calling invalidate() to refresh the background when view is moving
+ * Overwrites onDraw() method, draw the content under it using canvas as bitmap, then added as background
+ **/
 public class ClippedBackgroundView extends View {
     private View sourceView;
 
-    private Bitmap newBackground;
+    private Bitmap newBackground = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
 
     private final int[] location = new int[2];
 
@@ -27,11 +30,6 @@ public class ClippedBackgroundView extends View {
 
     public ClippedBackgroundView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        int id = context.obtainStyledAttributes(attrs, R.styleable.ClippedBackgroundView).
-                getResourceId(R.styleable.ClippedBackgroundView_source_view, 0);
-        sourceView = ((Activity)context).
-                findViewById(id);
-        init();
     }
 
     public ClippedBackgroundView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -42,7 +40,10 @@ public class ClippedBackgroundView extends View {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public void init(){
+    /**
+     * store the background as a whole bitmap in background
+     */
+    private void init(){
         if (null != sourceView) {
             newBackground = Bitmap.createBitmap(sourceView.getWidth(), sourceView.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(newBackground);
@@ -58,12 +59,16 @@ public class ClippedBackgroundView extends View {
     }
 
 
-    {        // discount the height of status bar to fix the up shift of background
+    {// discount the height of status bar to fix the up shift of background
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
         statusBarHeight = 0;
         if (resourceId > 0) statusBarHeight = getResources().getDimensionPixelSize(resourceId);
     }
 
+    /**
+     * catching the real position on Screen, cut background on size to fit the view
+     * @param canvas
+     */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

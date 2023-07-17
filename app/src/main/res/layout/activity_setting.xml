@@ -11,6 +11,14 @@
             android:background="@drawable/setting_page_back"
             android:id="@+id/setting_background"
     >
+        <ImageButton
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:background="@color/transparent"
+                android:layout_width="25dp"
+                android:layout_height="25dp" android:id="@+id/exist_setting_activity_btn"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="16dp" android:layout_marginEnd="16dp"
+                app:layout_constraintEnd_toEndOf="parent"/>
         <TextView
                 android:text="change background"
                 android:textColor="@color/white"

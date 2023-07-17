@@ -57,6 +57,10 @@ public class SettingActivity extends AppCompatActivity {
             intent.setType("image/*");
             startActivityForResult(intent, 1);
         });
+
+        layout.existSettingActivityBtn.setOnClickListener(c ->{
+            finish();
+        });
     }
 
     @Override

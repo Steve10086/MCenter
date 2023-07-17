@@ -146,7 +146,7 @@ public class InformationPage extends HookedFragment {
             );
             layout.emailInfo.setText(String.format("Email: \n%s", dataMap.get(Properties.EMAIL)));
 
-            String nu = null != getArguments().getString("deviceNum")? getArguments().getString("deviceNum"): "";
+            String nu = null != getArguments().getString("deviceNum")? getArguments().getString("deviceNum") : "";
             layout.deviceNumInfo.setText(String.format("You have %s devices", nu));
 
             layout.avatarInfo.setImageBitmap(mViewModel.getAvatar(this.requireContext()));
