@@ -1,19 +1,16 @@
 package com.astune.mcenter.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
-import android.graphics.RenderEffect;
-import android.graphics.Shader;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -22,20 +19,23 @@ import com.astune.mcenter.R;
 import com.astune.mcenter.databinding.ActivityMainBinding;
 import com.astune.mcenter.object.Hook;
 import com.astune.mcenter.object.Room.Device;
+import com.astune.mcenter.utils.PopupMenuUtil;
 import com.astune.mcenter.utils.enums.ActivityState;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 public class MainActivity extends AppCompatActivity {
     private MainActivityViewModel viewModel;
 
     protected FragmentManager pageManager;
-
-    private FragmentTransaction transaction;
-
     private Fragment informationPage;
 
     private Fragment newDevicePage;
 
     private ActivityMainBinding layout;
+
+    private int touchX = 0;
+    private int touchY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,14 +78,29 @@ public class MainActivity extends AppCompatActivity {
             Log.i("CardList", device.toString() + "clicked");
             try {
                 deviceCardClicked(device);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
+            } catch (NoSuchMethodException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
             return null;
         });
 
+        layout.informationContainer.setOnTouchListener((view, motionEvent) -> {
+            touchX = (int) motionEvent.getX();
+            touchY = (int) motionEvent.getY();
+            return false;
+        });
+
+        layout.cardList.setOnLongClickListener((Function1<Device, Unit>) device -> {
+            PopupMenu menu = new PopupMenu(this, layout.mainTitleBar.title);
+            menu.getMenuInflater().inflate(R.menu.card_list_popup_menu, menu.getMenu());
+            PopupMenuUtil.showMenuOnPosition(menu, touchX, touchY);
+            menu.setOnMenuItemClickListener(item ->
+            {
+                Log.i("CardList", item.getTitle().toString().equals("delete") ?  "delete" : "edit");
+                return false;
+            });
+            return null;
+        });
 
     }
 
@@ -99,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
         viewModel.title.setValue(device.getName());
         Fragment linkPage = new LinkPage(
                 new Hook[]{
-                        new Hook(this.getClass().getDeclaredMethod("creatingPageExisted"),
+                        new Hook(this.getClass().getDeclaredMethod("linkPageExisted"),
                                 this,
                                 ActivityState.ON_PAUSE),
-                        new Hook(this.getClass().getDeclaredMethod("creatingPageEntered"),
+                        new Hook(this.getClass().getDeclaredMethod("linkPageEntered"),
                                 this,
                                 ActivityState.ON_START)
                 }
@@ -110,14 +125,15 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle(device.toBundle());
         bundle.putString("viewModelClass", LinkPageViewModel.class.getName());
         linkPage.setArguments(bundle);
-        transaction = pageManager.beginTransaction();
-        transaction.add(R.id.information_container, linkPage);
+        FragmentTransaction transaction = pageManager.beginTransaction();
+        transaction.replace(R.id.information_container, linkPage);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
     //add information page into main stage
     public void infoPageClicked() throws NoSuchMethodException {
+        Log.i("Main", "infoClicked");
         if (informationPage == null){
             informationPage = new InformationPage(
                     new Hook[]{
@@ -133,8 +149,8 @@ public class MainActivity extends AppCompatActivity {
             bundle.putString("viewModelClass", InformationPageViewModel.class.getName());
             informationPage.setArguments(bundle);
         }
-        transaction = pageManager.beginTransaction();
-        transaction.add(R.id.information_container, informationPage);
+        FragmentTransaction transaction = pageManager.beginTransaction();
+        transaction.replace(R.id.information_container, informationPage);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -157,24 +173,60 @@ public class MainActivity extends AppCompatActivity {
             pageManager = MainActivity.this.getSupportFragmentManager();
         }
 
-        transaction = pageManager.beginTransaction();
+        FragmentTransaction transaction = pageManager.beginTransaction();
         transaction.replace(R.id.information_container, newDevicePage);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    public void infoPageEntered(){
+    public void linkPageEntered(){
         Log.i("MainAct", "Info entered");
         layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
         layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
         layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_out));
     }
 
+    public void linkPageExisted(){
+        Log.i("MainAct", "Link Existed");
+
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in);
+        animation.setInterpolator(new DecelerateInterpolator());
+
+        // set button visible after the animation ends, preventing bug with the fragment transaction
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
+                layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        layout.cardList.startAnimation(animation);
+    }
+
+    public void infoPageEntered(){
+        Log.i("MainAct", "Info entered");
+        layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
+        layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
+        layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_half_out));
+    }
+
     //info Page exist animation, hooked into onPause()
     public void infoPageExisted(){
         Log.i("MainAct", "Info existed");
-        Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in);
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_half_in);
         animation.setInterpolator(new DecelerateInterpolator());
+
+        // set button visible after the animation ends, prevent to destroy info page as it is leaving
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {

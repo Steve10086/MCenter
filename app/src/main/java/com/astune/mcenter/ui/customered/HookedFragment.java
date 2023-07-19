@@ -18,7 +18,7 @@ public class HookedFragment extends Fragment {
 
     protected HookedViewModel viewModel;
     private final boolean[] disableHooks = new boolean[]{false, false, false, false, false};
-    private boolean isNextHookDisabled = false;
+    private boolean[] isNextHookDisabled = new boolean[]{false, false, false, false, false};
 
     public HookedFragment(){
         super();
@@ -30,30 +30,13 @@ public class HookedFragment extends Fragment {
     }
 
     public void disableHook(int state){
-        switch (state){
-            case ActivityState.ON_CREATE:
-                disableHooks[0] = true;
-                break;
-            case ActivityState.ON_START:
-                disableHooks[1] = true;
-                break;
-            case ActivityState.ON_PAUSE:
-                disableHooks[2] = true;
-                break;
-            case ActivityState.ON_RESUME:
-                disableHooks[3] = true;
-                break;
-            case ActivityState.ON_STOP:
-                disableHooks[4] = true;
-                break;
-            default: throw new NoSuchElementException("unknown activity state");
-        }
-        isNextHookDisabled = true;
+        disableHooks[state] = true;
+        isNextHookDisabled[state] = true;
     }
 
     public void disableNextHook(int state){
         disableHook(state);
-        isNextHookDisabled = false;
+        isNextHookDisabled[state] = false;
     }
 
     public void doOnStateHooks(int state){
@@ -85,7 +68,7 @@ public class HookedFragment extends Fragment {
                 Log.e("hookedFragment", e.getMessage());
             }
         }else{
-            if (!isNextHookDisabled){
+            if (!isNextHookDisabled[state]){
                 disableHooks[state] = false;
             }
         }

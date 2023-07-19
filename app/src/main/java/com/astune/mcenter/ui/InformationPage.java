@@ -25,6 +25,8 @@ import com.astune.mcenter.utils.enums.Properties;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class InformationPage extends HookedFragment {
     private FragmentInformationPageBinding layout;
@@ -32,6 +34,10 @@ public class InformationPage extends HookedFragment {
     private InformationPageViewModel mViewModel;
 
     private boolean enteredFromSetting = false;
+
+    private final Object existLock = new Object();
+
+    private boolean isExisting = false;
 
     public InformationPage() {super();}
     public InformationPage(Hook[] hooks) {
@@ -69,64 +75,40 @@ public class InformationPage extends HookedFragment {
         if (!enteredFromSetting) {
 
         //using observer to get correct start x value of slide in animation
-        layout.infoBackground.getViewTreeObserver().addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
+            layout.infoBackground.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
 
-                //using an object animator allows update background when translating
-                Animator animator = AnimatorInflater.loadAnimator(parent, R.animator.slide_in);
-                ((ValueAnimator)animator).addUpdateListener((c)->{ //update view as translation
-                    layout.infoBackground.invalidate();
-                });
+                            //using an object animator allows update background when translating
+                            Animator animator = AnimatorInflater.loadAnimator(parent, R.animator.slide_in);
+                            ((ValueAnimator)animator).addUpdateListener((c)->{ //update view as translation
+                                layout.infoBackground.invalidate();
+                            });
 
-                ((ValueAnimator)animator).setFloatValues(-layout.blurFilter.getWidth(), 0);
-                animator.setTarget(layout.blurFilter);
-                animator.start();
+                            ((ValueAnimator)animator).setFloatValues(-layout.blurFilter.getWidth(), 0);
+                            animator.setTarget(layout.blurFilter);
+                            animator.start();
 
-                //destroy the observer after finish
-                layout.infoBackground.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
+                            //destroy the observer after finish
+                            layout.infoBackground.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                    });
         } else enteredFromSetting = false;
 
         //info page exist event
         layout.blurFilter.setOnClickListener(c->{
             layout.blurFilter.setClickable(false);
-                if (!enteredFromSetting) {//using an object animator allows update background when translating
-                    Animator animator = AnimatorInflater.loadAnimator(parent, R.animator.slide_in);
-                    ((ValueAnimator) animator).addUpdateListener((var) -> { //update view as translation
-                        try {
-                            layout.infoBackground.invalidate();
-                        }catch (NullPointerException e){
-                            Log.e("infoUIAnimator", "unExpected " + e.getMessage());
-                            getParentFragmentManager().popBackStack();
-                        }
-                    });
-
-                    ((ValueAnimator) animator).setFloatValues(0, -layout.blurFilter.getWidth());
-                    animator.setTarget(layout.blurFilter);
-                    animator.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(@NonNull Animator animator) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                layout.infoBackground.setRenderEffect(null);
-                            }
-                            getParentFragmentManager().popBackStack();
-                        }
-
-                    });
-                    animator.start();
-                    doOnStateHooks(ActivityState.ON_PAUSE);
-                    disableNextHook(ActivityState.ON_PAUSE);
-                }
+            getParentFragmentManager().popBackStack();
         });
 
         //setting activity event
         layout.settingBtn.setOnClickListener(c->{
             Intent intent = new Intent(parent, SettingActivity.class);
             enteredFromSetting = true;
-            startActivityForResult(intent, 0);
+            disableNextHook(ActivityState.ON_PAUSE);
+            disableNextHook(ActivityState.ON_START);
+            startActivity(intent);
         });
 
         setUIData();
@@ -135,7 +117,8 @@ public class InformationPage extends HookedFragment {
     @Override
     public void onDestroyView(){
         super.onDestroyView();
-        layout = null;
+
+        Log.i("info", "view destroyed");
     }
 
     public void setUIData(){
@@ -151,23 +134,43 @@ public class InformationPage extends HookedFragment {
 
             layout.avatarInfo.setImageBitmap(mViewModel.getAvatar(this.requireContext()));
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
-        if(resultCode == 0){
-            this.getParentFragmentManager().popBackStack();
-            doOnStateHooks(ActivityState.ON_PAUSE);
-        }
-    }
+    public Animator onCreateAnimator(int transit, boolean enter, int nextAnim){
+        if (!enteredFromSetting && !enter){
+            //using an object animator allows update background when translating
+                Animator animator = AnimatorInflater.loadAnimator(parent, R.animator.slide_in);
+                ((ValueAnimator) animator).addUpdateListener((var) -> { //update view as translation
+                    try {
+                        layout.infoBackground.invalidate();
+                    }catch (NullPointerException e){
+                        Log.e("infoUIAnimator", "unExpected " + e.getMessage());
+                    }
+                });
 
-    @Override
-    public void onPause(){
-        super.onPause();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            layout.infoBackground.setRenderEffect(null);
+                ((ValueAnimator) animator).setFloatValues(0, -layout.blurFilter.getWidth());
+
+                animator.setTarget(layout.blurFilter);
+                animator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(@NonNull Animator animator) {
+                        super.onAnimationEnd(animator);
+                        isExisting = true;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            layout.infoBackground.setRenderEffect(null);
+                        }
+                        //Log.i("info", "animation end");
+                        layout = null;
+                    }
+
+                });
+                doOnStateHooks(ActivityState.ON_PAUSE);
+                disableNextHook(ActivityState.ON_PAUSE);
+                return animator;
         }
+        return super.onCreateAnimator(transit, enter, nextAnim);
     }
 }

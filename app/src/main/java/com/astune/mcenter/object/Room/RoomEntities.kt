@@ -61,7 +61,7 @@ data class WebLink(
     @ColumnInfo(name = "name") val linkName: String,
 
     @ColumnInfo val address: String,
-) : Link(){
+) : Link {
     override fun getName(): String {
         return linkName
     }
@@ -72,5 +72,9 @@ data class WebLink(
 
     override fun getType(): String {
         return LinkType.WEB_LINK
+    }
+
+    override fun getInfo(): String {
+        return address
     }
 }

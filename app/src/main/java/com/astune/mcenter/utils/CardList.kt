@@ -3,6 +3,8 @@ package com.astune.mcenter.utils
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,16 +24,20 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.astune.mcenter.`object`.Room.Device
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DeviceCard(device: Device, modifier: Modifier, onClick: () -> Unit){
-
+fun DeviceCard (device: Device, modifier: Modifier, onClick: (Device) -> Unit = {}, onLongClick: (Device) -> Unit = {}){
     Surface (
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
             .padding(5.dp)
             .defaultMinSize(minWidth = 284.dp, minHeight = 140.dp)
             .width(300.dp)
-            .height(100.dp),
+            .height(100.dp)
+            .combinedClickable(
+            onClick = {},
+            onLongClick = { onLongClick(device) }
+        ),
         elevation = 3.dp, color = Color.White
     ) {
         ConstraintLayout(Modifier.height(164.dp)) {
@@ -62,7 +68,7 @@ fun DeviceCard(device: Device, modifier: Modifier, onClick: () -> Unit){
                     start.linkTo(parent.start, 15.dp)
             })
 
-            Button(onClick = onClick, Modifier
+            Button(onClick = { onClick(device) }, Modifier
                 .constrainAs(infoBtn){
                     end.linkTo(parent.end, 5.dp)
                 }
@@ -77,10 +83,7 @@ fun DeviceCard(device: Device, modifier: Modifier, onClick: () -> Unit){
 
         }
     }
-
 }
-
-
 
 
 @Preview(showBackground = true)
@@ -100,7 +103,8 @@ class DeviceCardList @JvmOverloads constructor(
     attrs: AttributeSet? = null,
 ) : AbstractComposeView(context, attrs) {
     private var cardList = mutableStateOf(emptyList<Device>())
-    private var onClick: ((Device) -> Unit)? = null;
+    private var onClick: ((Device) -> Unit) = { }
+    private var onLongClick: ((Device) -> Unit) = { }
     fun setCard(devices: List<Device>){
         Log.i("CardList" ,"val updated")
         cardList.value = devices
@@ -110,16 +114,16 @@ class DeviceCardList @JvmOverloads constructor(
         this.onClick = onClick
     }
 
+    fun setOnLongClickListener(onLongClick: (Device) -> Unit){
+        this.onLongClick = onLongClick
+    }
 
     @Composable
     override fun Content() {
         LazyColumn(modifier = Modifier.padding(all = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             items(cardList.value) { card ->
-                DeviceCard(card, modifier = Modifier.padding(10.dp)){
-                    onClick?.invoke(card)
-                }
+                DeviceCard(card, modifier = Modifier.padding(10.dp), onClick = onClick, onLongClick = onLongClick)
             }
         }
     }
-
 }

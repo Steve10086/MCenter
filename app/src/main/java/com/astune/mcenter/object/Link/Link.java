@@ -2,10 +2,12 @@ package com.astune.mcenter.object.Link;
 
 import com.astune.mcenter.object.Room.Device;
 
-public abstract class Link {
-    public abstract String getName();
+public interface Link {
+    String getName();
 
-    public abstract int getParentId();
+    int getParentId();
 
-    public abstract String getType();
+    String getType();
+
+    String getInfo();
 }

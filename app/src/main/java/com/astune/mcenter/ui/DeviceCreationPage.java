@@ -96,12 +96,14 @@ public class DeviceCreationPage extends HookedFragment {
 
         });
 
-        Animation animation = AnimationUtils.loadAnimation(parent, R.anim.slide_in);
+        Animation animation = AnimationUtils.loadAnimation(parent, R.anim.slide_in_right);
         parent.findViewById(R.id.device_creation_background).startAnimation(animation);
     }
 
     @Override
     public void onPause(){
+        Animation animation = AnimationUtils.loadAnimation(parent, R.anim.slide_out_right);
+        parent.findViewById(R.id.device_creation_background).startAnimation(animation);
         super.onPause();
         disposable.clear();
     }
