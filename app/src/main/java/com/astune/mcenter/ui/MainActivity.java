@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.EditText;
+import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
@@ -19,8 +22,12 @@ import com.astune.mcenter.R;
 import com.astune.mcenter.databinding.ActivityMainBinding;
 import com.astune.mcenter.object.Hook;
 import com.astune.mcenter.object.Room.Device;
+import com.astune.mcenter.object.Room.MCenterDB;
 import com.astune.mcenter.utils.PopupMenuUtil;
 import com.astune.mcenter.utils.enums.ActivityState;
+import com.astune.mcenter.utils.enums.Properties;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
@@ -97,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
             menu.setOnMenuItemClickListener(item ->
             {
                 Log.i("CardList", item.getTitle().toString().equals("delete") ?  "delete" : "edit");
+                if (item.getTitle().toString().equals(getResources().getString(R.string.delete))){
+                    viewModel.deleteDevice(device);
+                }
                 return false;
             });
             return null;
@@ -156,27 +166,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createBtnClicked() throws NoSuchMethodException {
-        if (newDevicePage == null){
-            newDevicePage = new DeviceCreationPage(
-                    new Hook[]{
-                            new Hook(this.getClass().getDeclaredMethod("creatingPageExisted"),
-                                    this,
-                                    ActivityState.ON_PAUSE),
-                            new Hook(this.getClass().getDeclaredMethod("creatingPageEntered"),
-                                    this,
-                                    ActivityState.ON_START)
-                    }
-            );
-            Bundle bundle = new Bundle();
-            bundle.putString("viewModelClass", DeviceCreationPageViewModel.class.getName());
-            newDevicePage.setArguments(bundle);
-            pageManager = MainActivity.this.getSupportFragmentManager();
-        }
+        AlertDialog.Builder passwordDialog = new AlertDialog.Builder(this);
+        View view = View.inflate(passwordDialog.getContext(), R.layout.creating_device_dialog, null);
+        passwordDialog
+                .setPositiveButton("save", (dialogInterface, i) -> {
 
-        FragmentTransaction transaction = pageManager.beginTransaction();
-        transaction.replace(R.id.information_container, newDevicePage);
-        transaction.addToBackStack(null);
-        transaction.commit();
+                    String name = ((EditText)view.findViewById(R.id.name_editor)).getText().toString();
+                    String address = ((EditText)view.findViewById(R.id.address_editor)).getText().toString();
+
+                    if (!"".equals(name) && !"".equals(address))
+                    {
+                        assert MCenterDB.Companion.getDB() != null;
+
+                        viewModel.insertDevice(new Device(0, name, address, null), getApplicationContext());
+                    } else {
+                        Toast.makeText(getApplicationContext(), "empty name or ip", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setTitle("Create Device")
+                .setView(view)
+                .create().show();
     }
 
     public void linkPageEntered(){

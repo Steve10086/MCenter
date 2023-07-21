@@ -6,10 +6,21 @@
     <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
+            android:inputType="text"
+            android:hint="@string/name"
             android:ems="10"
             android:id="@+id/name_editor"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="16dp" app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="29dp"/>
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textUri|text"
+            android:hint="@string/ip"
+            android:ems="10"
+            android:id="@+id/address_editor"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="68dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="28dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

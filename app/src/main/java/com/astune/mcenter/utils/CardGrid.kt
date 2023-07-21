@@ -3,39 +3,66 @@ package com.astune.mcenter.utils
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
-import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.astune.mcenter.R
 import com.astune.mcenter.`object`.Link.Link
 import com.astune.mcenter.`object`.Room.WebLink
 import com.astune.mcenter.utils.enums.LinkType
 
+
+class RoundedCornerRectangleShape(
+    private val cornerRadius: Dp
+) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        return Outline.Rounded(
+            RoundRect(
+                left = 0f,
+                top = 0f,
+                right = size.width,
+                bottom = size.height,
+                topLeftCornerRadius = CornerRadius(cornerRadius.value, cornerRadius.value),
+                topRightCornerRadius = CornerRadius(cornerRadius.value, cornerRadius.value),
+                bottomLeftCornerRadius = CornerRadius(cornerRadius.value, cornerRadius.value),
+                bottomRightCornerRadius = CornerRadius(cornerRadius.value, cornerRadius.value),
+            ),
+        )
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LinkCard(link: Link, modifier: Modifier, onClick: (Link) -> Unit = {}, onLongClick: (Link) -> Unit = {}){
-    Surface (shape = MaterialTheme.shapes.medium,
+fun LinkCard(link: Link,
+             modifier: Modifier,
+             onClick: (Link) -> Unit = {},
+             onLongClick: (Link) -> Unit = {}){
+    Surface (shape = RoundedCornerRectangleShape(50.dp),
         modifier = modifier
             .sizeIn(maxHeight = 100.dp, maxWidth = 100.dp)
             .width(100.dp)
@@ -46,16 +73,26 @@ fun LinkCard(link: Link, modifier: Modifier, onClick: (Link) -> Unit = {}, onLon
             ),
         elevation = 3.dp, color = Color.White
     ){
-        ConstraintLayout {
+        if (link.type == LinkType.NEW_LINK){
+            Row(horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(20.dp)){
+                Image(painterResource(R.drawable.plus_icon),
+                    "insert_link_pic",
+                    modifier = Modifier
+                        .width(60.dp)
+                        .height(60.dp))
+            }
+        }else{
+            ConstraintLayout {
             val (icon, name, info) = createRefs()
-            val painter: Painter
-            when (link.type){
-                LinkType.WEB_LINK -> painter = painterResource(R.drawable.web_icon)
+            val painter: Painter = when (link.type){
+                LinkType.WEB_LINK -> painterResource(R.drawable.web_icon)
 
-                LinkType.SSH_LINK -> painter = painterResource(R.drawable.ssh_icon)
+                LinkType.SSH_LINK -> painterResource(R.drawable.ssh_icon)
 
                 else -> {
-                    painter = painterResource(R.drawable.round_shape)
+                    painterResource(R.drawable.round_shape)
                 }
             }
             Image(painter = painter,
@@ -78,6 +115,7 @@ fun LinkCard(link: Link, modifier: Modifier, onClick: (Link) -> Unit = {}, onLon
                 start.linkTo(parent.start, 5.dp)
             })
 
+        }
         }
     }
 }
@@ -104,9 +142,7 @@ fun CardListPerview(){
     {
         items(testLink){ card ->
             Row(modifier = Modifier, horizontalArrangement = Arrangement.Center){
-                LinkCard(card, Modifier){
-
-                }
+                LinkCard(card, Modifier){}
             }
 
         }
@@ -123,8 +159,12 @@ class LinkCardGrid @JvmOverloads constructor(
     private var onLongClick: ((Link) -> Unit) = {}
 
     fun setCard(link: List<Link>){
-        Log.i("CardGrid" ,"val updated")
+        Log.i("CardGrid" , "val updated$link")
         cardList.value = link
+    }
+
+    fun addCard(link: Link){
+        cardList.value = cardList.value + link
     }
 
     fun setOnclickListener(onClick: (Link) -> Unit){

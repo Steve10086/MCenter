@@ -1,6 +1,8 @@
 package com.astune.mcenter.ui;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -21,7 +23,6 @@ import java.util.List;
 public class MainActivityViewModel extends ViewModel {
     private final MCenterDB db;
 
-    private boolean isBlurred = false;
     protected final MutableLiveData<String> title = new MutableLiveData<>("main");
 
     private final CompositeDisposable disposable = new CompositeDisposable();
@@ -39,8 +40,7 @@ public class MainActivityViewModel extends ViewModel {
 
             assert db != null;
             Log.i("room", "start");
-            deviceList.getValue().clear();
-            deviceList.getValue().addAll(db.deviceDao().getAll());
+            deviceList.postValue(db.deviceDao().getAll());
             Log.i("room", "finish");
 
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
@@ -69,6 +69,13 @@ public class MainActivityViewModel extends ViewModel {
         }
     }
 
+    public void deleteDevice(Device device){
+        disposable.add(db.deviceDao().delete(device).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() ->{
+            Log.i("room", "delete complete");
+            refreshDeviceList();
+        }));
+    }
+
     private boolean isOnline(String ip){
         InetAddress address;
         try {
@@ -84,13 +91,14 @@ public class MainActivityViewModel extends ViewModel {
         return false;
     }
 
-
-
-    public boolean isBlurred() {
-        return isBlurred;
-    }
-
-    public void setBlurred(boolean blurred) {
-        isBlurred = blurred;
+    public void insertDevice(Device device, Context context){
+        disposable.add(
+                MCenterDB.Companion.getDB().deviceDao().insert(device)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(()-> {
+                            Toast.makeText(context, "finish", Toast.LENGTH_SHORT).show();
+                            refreshDeviceList();
+                        }));
     }
 }

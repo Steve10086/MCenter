@@ -21,6 +21,8 @@ import com.astune.mcenter.R;
 import com.astune.mcenter.databinding.FragmentLinkPageBinding;
 import com.astune.mcenter.object.Hook;
 import com.astune.mcenter.object.Link.Link;
+import com.astune.mcenter.object.Link.NewLink;
+import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.WebLink;
 import com.astune.mcenter.ui.customered.HookedFragment;
 import com.astune.mcenter.utils.PopupMenuUtil;
@@ -28,6 +30,8 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class LinkPage extends HookedFragment {
@@ -37,6 +41,7 @@ public class LinkPage extends HookedFragment {
     private FragmentLinkPageBinding layout;
 
     private int touchX, touchY = 0;
+
 
     public static LinkPage newInstance() {
         return new LinkPage();
@@ -84,12 +89,13 @@ public class LinkPage extends HookedFragment {
             }
         });
 
-        List<Link> testLink = new ArrayList<>();
-        for (int i = 0; i < 25; i++){
-            testLink.add(new WebLink(i, 0, "test" + i, "123.456.789"));
-        }
+        mViewModel.refreshLinkTable(getArguments().getInt("id"));
 
-        layout.linkCardList.setCard(testLink);
+        mViewModel.getLinkList().observe(this, cardList ->{
+            layout.linkCardList.setCard(cardList);
+            layout.linkCardList.addCard(new NewLink(-1, getArguments().getInt("id"), ""));
+        });
+
         layout.linkCardList.setOnclickListener(c ->{
             Log.i("linkPage", "Link" + c.getName() + "clicked");
             return null;
@@ -111,7 +117,8 @@ public class LinkPage extends HookedFragment {
             menu.getMenuInflater().inflate(R.menu.card_list_popup_menu, menu.getMenu());
             PopupMenuUtil.showMenuOnPosition(menu, touchX, touchY);
             menu.setOnMenuItemClickListener(item ->{
-                Log.i("linkPage", item.getTitle().toString().equals("delete") ? "delete":"edit");
+                Log.i("linkPage", item.getTitle().toString().equals(getResources().getString(R.string.delete)) ? getResources().getString(R.string.delete) : getResources().getString(R.string.edit));
+
                 return false;
             });
             return null;

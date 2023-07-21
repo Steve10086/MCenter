@@ -78,3 +78,31 @@ data class WebLink(
         return address
     }
 }
+
+@Entity
+data class SSHLink(
+
+    @PrimaryKey(autoGenerate = true) val id:Int,
+
+    @ColumnInfo val parent:Int,
+
+    @ColumnInfo(name = "name") val linkName: String,
+
+    @ColumnInfo val address: String,
+) : Link {
+    override fun getName(): String {
+        return linkName
+    }
+
+    override fun getParentId(): Int {
+        return parent
+    }
+
+    override fun getType(): String {
+        return LinkType.SSH_LINK
+    }
+
+    override fun getInfo(): String {
+        return address
+    }
+}

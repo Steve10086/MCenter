@@ -92,7 +92,7 @@ public class SettingActivity extends AppCompatActivity {
         View view = View.inflate(passwordDialog.getContext(), R.layout.setting_password_dialog, null);
         passwordDialog
                 .setPositiveButton("save", (dialogInterface, i) -> {
-                    viewModel.updateMap(Properties.PASSWORD, ((EditText)view.findViewById(R.id.password_editor)).getText().toString());
+                    viewModel.updateMap(Properties.PASSWORD, ((EditText)view.findViewById(R.id.name_editor)).getText().toString());
                 })
                 .setTitle("Enter password")
                 .setView(view)
