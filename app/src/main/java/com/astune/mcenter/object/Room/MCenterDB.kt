@@ -1,14 +1,12 @@
 package com.astune.mcenter.`object`.Room
 
 import android.content.Context
-import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
 import com.astune.mcenter.`object`.Dao.*
 import com.astune.mcenter.`object`.Link.Link
 import com.astune.mcenter.utils.enums.LinkType
-import java.lang.Exception
 
 @Database(entities = [Device::class, WebLink::class, SSHLink::class, ZeroTier::class], version = 1, exportSchema = true)
 abstract class MCenterDB: RoomDatabase() {
@@ -36,7 +34,7 @@ abstract class MCenterDB: RoomDatabase() {
         }
     }
 
-    fun<T:Link> getResponseLinkDao(type: String): LinkDao<T> {
+    fun<T:Link> getResponseLinkDao(type: LinkType): LinkDao<T> {
         return when(type){
             LinkType.WEB_LINK -> {
                 webLinkDao() as LinkDao<T>

@@ -3,13 +3,11 @@ package com.astune.mcenter.object.Link;
 import com.astune.mcenter.utils.enums.LinkType;
 
 public class NewLink implements Link {
-    private String name;
-    private int id;
-    private int parentId;
-    private final String type = LinkType.NEW_LINK;
+    private final String name;
+    private final int parentId;
+    private final LinkType type = LinkType.NEW_LINK;
 
-    public NewLink(int id, int parentId, String name){
-        this.id = id;
+    public NewLink(int parentId, String name){
         this.parentId = parentId;
         this.name = name;
     }
@@ -24,7 +22,7 @@ public class NewLink implements Link {
     }
 
     @Override
-    public String getType() {
+    public LinkType getType() {
         return type;
     }
 

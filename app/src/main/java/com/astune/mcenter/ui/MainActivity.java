@@ -1,10 +1,8 @@
 package com.astune.mcenter.ui;
 
-import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -25,9 +23,6 @@ import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.MCenterDB;
 import com.astune.mcenter.utils.PopupMenuUtil;
 import com.astune.mcenter.utils.enums.ActivityState;
-import com.astune.mcenter.utils.enums.Properties;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
@@ -36,8 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     protected FragmentManager pageManager;
     private Fragment informationPage;
-
-    private Fragment newDevicePage;
 
     private ActivityMainBinding layout;
 
@@ -56,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.refreshDeviceList();
 
-        pageManager = MainActivity.this.getSupportFragmentManager();
+        pageManager = getSupportFragmentManager();
 
         viewModel.deviceList.observe(this, devices -> {
             layout.cardList.setCard(devices);
@@ -120,6 +113,12 @@ public class MainActivity extends AppCompatActivity {
         viewModel.updateOnline();
     }
 
+    @Override
+    public void onPause(){
+        super.onPause();
+        viewModel.finish();
+    }
+
     public void deviceCardClicked(Device device) throws NoSuchMethodException, ClassNotFoundException {
         viewModel.title.setValue(device.getName());
         Fragment linkPage = new LinkPage(
@@ -167,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void createBtnClicked() throws NoSuchMethodException {
         AlertDialog.Builder passwordDialog = new AlertDialog.Builder(this);
-        View view = View.inflate(passwordDialog.getContext(), R.layout.creating_device_dialog, null);
+        View view = View.inflate(passwordDialog.getContext(), R.layout.device_creation_dialog, null);
         passwordDialog
                 .setPositiveButton("save", (dialogInterface, i) -> {
 
@@ -183,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "empty name or ip", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setTitle("Create Device")
+                .setTitle("New Device")
                 .setView(view)
                 .create().show();
     }
@@ -200,25 +199,8 @@ public class MainActivity extends AppCompatActivity {
 
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_in);
         animation.setInterpolator(new DecelerateInterpolator());
+        onAnimationEnd(animation);
 
-        // set button visible after the animation ends, preventing bug with the fragment transaction
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
-                layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
         layout.cardList.startAnimation(animation);
     }
 
@@ -230,12 +212,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //info Page exist animation, hooked into onPause()
-    public void infoPageExisted(){
+    public void infoPageExisted() {
         Log.i("MainAct", "Info existed");
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_half_in);
         animation.setInterpolator(new DecelerateInterpolator());
+        onAnimationEnd(animation);
 
-        // set button visible after the animation ends, prevent to destroy info page as it is leaving
+        layout.cardList.startAnimation(animation);
+    }
+
+    // set button visible after the animation ends, preventing bug with the fragment transaction
+    private void onAnimationEnd(Animation animation){
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -253,17 +240,5 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        layout.cardList.startAnimation(animation);
-    }
-
-    public void creatingPageExisted(){
-        viewModel.refreshDeviceList();
-        layout.mainTitleBar.userInfoBtn.setVisibility(View.VISIBLE);
-        layout.mainTitleBar.createBtn.setVisibility(View.VISIBLE);
-    }
-
-    public void creatingPageEntered(){
-        layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
-        layout.mainTitleBar.createBtn.setVisibility(View.INVISIBLE);
     }
 }

@@ -62,10 +62,10 @@ fun LinkCard(link: Link,
              modifier: Modifier,
              onClick: (Link) -> Unit = {},
              onLongClick: (Link) -> Unit = {}){
-    Surface (shape = RoundedCornerRectangleShape(50.dp),
+    Surface (shape = RoundedCornerRectangleShape(25.dp),
         modifier = modifier
-            .sizeIn(maxHeight = 100.dp, maxWidth = 100.dp)
-            .width(100.dp)
+            .sizeIn(maxHeight = 100.dp, maxWidth = 80.dp)
+            .width(80.dp)
             .height(100.dp)
             .combinedClickable (
                 onClick = { onClick(link) },
@@ -102,7 +102,6 @@ fun LinkCard(link: Link,
                     .width(80.dp).height(60.dp)
                     .constrainAs(icon){
                 top.linkTo(parent.top, 5.dp)
-                start.linkTo(parent.start, 10.dp)
             })
 
             Text(text = link.name, modifier = Modifier.constrainAs(name){

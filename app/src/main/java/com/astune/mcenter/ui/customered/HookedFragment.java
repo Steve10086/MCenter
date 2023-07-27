@@ -16,7 +16,7 @@ public class HookedFragment extends Fragment {
 
     protected Activity parent;
 
-    protected HookedViewModel viewModel;
+    private HookedViewModel mViewModel;
     private final boolean[] disableHooks = new boolean[]{false, false, false, false, false};
     private boolean[] isNextHookDisabled = new boolean[]{false, false, false, false, false};
 
@@ -27,6 +27,14 @@ public class HookedFragment extends Fragment {
     public HookedFragment(Hook[] hooks) {
         super();
         this.hooks = hooks;
+    }
+
+    public<T extends HookedViewModel> T getViewModel(Class<T> clazz) {
+        if (clazz.isInstance(mViewModel)) {
+            return (T) mViewModel;
+        } else {
+            throw new IllegalArgumentException("HookedViewModel cannot be cast into " + clazz.getName());
+        }
     }
 
     public void disableHook(int state){
@@ -43,19 +51,19 @@ public class HookedFragment extends Fragment {
         List<Hook> doHook;
         switch (state){
             case ActivityState.ON_CREATE:
-                doHook = viewModel.onCreateHook;
+                doHook = mViewModel.onCreateHook;
                 break;
             case ActivityState.ON_START:
-                doHook = viewModel.onStartHook;
+                doHook = mViewModel.onStartHook;
                 break;
             case ActivityState.ON_PAUSE:
-                doHook = viewModel.onPauseHook;
+                doHook = mViewModel.onPauseHook;
                 break;
             case ActivityState.ON_RESUME:
-                doHook = viewModel.onResumeHook;
+                doHook = mViewModel.onResumeHook;
                 break;
             case ActivityState.ON_STOP:
-                doHook = viewModel.onStopHook;
+                doHook = mViewModel.onStopHook;
                 break;
             default: throw new NoSuchElementException("unknown activity state");
         }
@@ -80,12 +88,12 @@ public class HookedFragment extends Fragment {
         this.parent = requireActivity();
 
         try {
-            viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory())
+            mViewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory())
                     .get((Class<? extends HookedViewModel>) Class.forName(getArguments().getString("viewModelClass")));
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        viewModel.setHooks(hooks);
+        mViewModel.setHooks(hooks);
 
         doOnStateHooks(ActivityState.ON_CREATE);
 
@@ -107,5 +115,11 @@ public class HookedFragment extends Fragment {
     public void onStop(){
         super.onStop();
         doOnStateHooks(ActivityState.ON_STOP);
+    }
+
+    public static Bundle setDefaultBundle(Class<com.astune.mcenter.ui.LinkInsertionPageViewModel> viewmodelClass){
+        Bundle bundle = new Bundle();
+        bundle.putString("viewModelClass", viewmodelClass.getName());
+        return bundle;
     }
 }

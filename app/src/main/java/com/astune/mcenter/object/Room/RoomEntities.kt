@@ -1,7 +1,6 @@
 package com.astune.mcenter.`object`.Room
 
 import android.os.Bundle
-import androidx.annotation.NonNull
 import androidx.core.os.bundleOf
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -9,7 +8,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.astune.mcenter.`object`.Link.Link
 import com.astune.mcenter.utils.enums.LinkType
-import java.util.Date
 
 @Entity
 data class Device(
@@ -70,7 +68,7 @@ data class WebLink(
         return parent
     }
 
-    override fun getType(): String {
+    override fun getType(): LinkType {
         return LinkType.WEB_LINK
     }
 
@@ -98,7 +96,7 @@ data class SSHLink(
         return parent
     }
 
-    override fun getType(): String {
+    override fun getType(): LinkType {
         return LinkType.SSH_LINK
     }
 

@@ -3,15 +3,12 @@ package com.astune.mcenter.ui;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.MCenterDB;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.CompletableObserver;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -91,14 +88,18 @@ public class MainActivityViewModel extends ViewModel {
         return false;
     }
 
-    public void insertDevice(Device device, Context context){
+    public void insertDevice(Device device, Context appContext){
         disposable.add(
                 MCenterDB.Companion.getDB().deviceDao().insert(device)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(()-> {
-                            Toast.makeText(context, "finish", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(appContext, "finish", Toast.LENGTH_SHORT).show();
                             refreshDeviceList();
                         }));
+    }
+
+    public void finish(){
+        disposable.clear();
     }
 }

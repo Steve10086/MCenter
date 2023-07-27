@@ -17,30 +17,28 @@ import android.view.animation.DecelerateInterpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import com.astune.mcenter.R;
 import com.astune.mcenter.databinding.FragmentLinkPageBinding;
 import com.astune.mcenter.object.Hook;
 import com.astune.mcenter.object.Link.Link;
 import com.astune.mcenter.object.Link.NewLink;
-import com.astune.mcenter.object.Room.Device;
-import com.astune.mcenter.object.Room.WebLink;
 import com.astune.mcenter.ui.customered.HookedFragment;
 import com.astune.mcenter.utils.PopupMenuUtil;
+import com.astune.mcenter.utils.enums.LinkType;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 public class LinkPage extends HookedFragment {
 
-    private LinkPageViewModel mViewModel;
+    private LinkPageViewModel viewModel;
 
     private FragmentLinkPageBinding layout;
 
     private int touchX, touchY = 0;
+
+    private FragmentManager pageManager;
 
 
     public static LinkPage newInstance() {
@@ -61,7 +59,8 @@ public class LinkPage extends HookedFragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        mViewModel = (LinkPageViewModel) viewModel;
+        viewModel = getViewModel(LinkPageViewModel.class);
+        viewModel.setId(getArguments().getInt("id"));
     }
 
     @Override
@@ -89,15 +88,17 @@ public class LinkPage extends HookedFragment {
             }
         });
 
-        mViewModel.refreshLinkTable(getArguments().getInt("id"));
+        assert getArguments() != null;
+        viewModel.refreshLinkTable();
 
-        mViewModel.getLinkList().observe(this, cardList ->{
+        viewModel.getLinkList().observe(this, cardList ->{
             layout.linkCardList.setCard(cardList);
-            layout.linkCardList.addCard(new NewLink(-1, getArguments().getInt("id"), ""));
+            layout.linkCardList.addCard(new NewLink(getArguments().getInt("id"), ""));
         });
 
-        layout.linkCardList.setOnclickListener(c ->{
-            Log.i("linkPage", "Link" + c.getName() + "clicked");
+        layout.linkCardList.setOnclickListener(link ->{
+            Log.i("linkPage", "Link" + link.getName() + "clicked");
+            startFromCard(link);
             return null;
         });
 
@@ -118,11 +119,26 @@ public class LinkPage extends HookedFragment {
             PopupMenuUtil.showMenuOnPosition(menu, touchX, touchY);
             menu.setOnMenuItemClickListener(item ->{
                 Log.i("linkPage", item.getTitle().toString().equals(getResources().getString(R.string.delete)) ? getResources().getString(R.string.delete) : getResources().getString(R.string.edit));
-
+                if(item.getTitle().toString().equals(getResources().getString(R.string.delete))) viewModel.deleteLink(link) ;
                 return false;
             });
             return null;
         });
+
+        pageManager = getParentFragmentManager();
+
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        viewModel.finish();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        viewModel.refreshLinkTable();
     }
 
     @Override
@@ -147,6 +163,38 @@ public class LinkPage extends HookedFragment {
             return animator;
         }
         return super.onCreateAnimator(transit, true, nextAnim);
+    }
+
+
+
+    private void startFromCard(Link link){
+        FragmentTransaction transaction;
+        Bundle bundle;
+        switch (link.getType()){
+            case WEB_LINK:
+                WebLinkPage webLinkPage = new WebLinkPage(touchX, touchY);
+                bundle = new Bundle(getArguments());
+                bundle.putString("address", getArguments().getString("ip") + ":" + link.getInfo());
+                webLinkPage.setArguments(bundle);
+                transaction = pageManager.beginTransaction();
+                transaction.replace(R.id.link_page_container, webLinkPage);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                break;
+            case SSH_LINK:
+                break;
+            case NEW_LINK:
+                LinkInsertionPage linkInsertionPage = new LinkInsertionPage(touchX, touchY);
+                bundle = new Bundle(getArguments());
+                linkInsertionPage.setArguments(bundle);
+                transaction = pageManager.beginTransaction();
+                transaction.replace(R.id.link_page_container, linkInsertionPage);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                break;
+            default:
+                throw new IllegalArgumentException("unavailable linktype");
+        }
     }
 
 }

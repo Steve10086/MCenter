@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.AnimationUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.astune.mcenter.R;
@@ -25,13 +24,11 @@ import com.astune.mcenter.utils.enums.Properties;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class InformationPage extends HookedFragment {
     private FragmentInformationPageBinding layout;
 
-    private InformationPageViewModel mViewModel;
+    private InformationPageViewModel viewModel;
 
     private boolean enteredFromSetting = false;
 
@@ -51,7 +48,7 @@ public class InformationPage extends HookedFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel = (InformationPageViewModel) viewModel;
+        viewModel = getViewModel(InformationPageViewModel.class);
     }
 
     @Override
@@ -132,7 +129,7 @@ public class InformationPage extends HookedFragment {
             String nu = null != getArguments().getString("deviceNum")? getArguments().getString("deviceNum") : "";
             layout.deviceNumInfo.setText(String.format("You have %s devices", nu));
 
-            layout.avatarInfo.setImageBitmap(mViewModel.getAvatar(this.requireContext()));
+            layout.avatarInfo.setImageBitmap(viewModel.getAvatar(this.requireContext()));
         } catch (IOException e) {
             e.printStackTrace();
         }
