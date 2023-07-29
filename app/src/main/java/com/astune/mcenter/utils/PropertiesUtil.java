@@ -13,7 +13,13 @@ import java.util.*;
 
 public class PropertiesUtil {
 
-    //get mapping of key value and corresponding data
+    /**
+     * Get property from file in the dir
+     * @param dir filepath
+     * @param propertyKeys values needs from the property
+     * @return map containing key and the value
+     * @throws IOException when file not exist
+     */
     public static Map<String, String> getProperty(String dir, String... propertyKeys) throws IOException {
         Map<String, String> result = new HashMap<>();
 
@@ -32,6 +38,12 @@ public class PropertiesUtil {
 
     }
 
+    /**
+     * Set property onto file in the dir
+     * @param dir filepath
+     * @param settingMap key-value pairs that will be restored
+     * @throws IOException when file not exist
+     */
     public static void setProperty(String dir, Map<String, String> settingMap) throws IOException {
         Properties p = new Properties();
         FileWriter writer = new FileWriter(dir);
@@ -52,7 +64,7 @@ public class PropertiesUtil {
     }
 
 
-    public static void copyFileFAssets(Context context, String name, String newPath) throws IOException {
+    public static void copyFileFromAssets(Context context, String name, String newPath) throws IOException {
         Files.copy(context.getAssets().open(name), Paths.get(newPath));
     }
 }

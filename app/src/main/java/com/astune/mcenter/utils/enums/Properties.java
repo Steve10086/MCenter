@@ -1,6 +1,6 @@
 package com.astune.mcenter.utils.enums;
 
-public enum Properties {;
+public class Properties {
     public static final String EMAIL = "email";
     public static final String THEME = "theme";
     public static final String ZEROTIER = "zerotier";

@@ -40,9 +40,9 @@ public class ClippedBackgroundView extends View {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    /**
-     * store the background as a whole bitmap in background
-     */
+
+
+    //store the background as a whole bitmap in background
     private void init(){
         if (null != sourceView) {
             newBackground = Bitmap.createBitmap(sourceView.getWidth(), sourceView.getHeight(), Bitmap.Config.ARGB_8888);
@@ -65,10 +65,8 @@ public class ClippedBackgroundView extends View {
         if (resourceId > 0) statusBarHeight = getResources().getDimensionPixelSize(resourceId);
     }
 
-    /**
-     * catching the real position on Screen, cut background on size to fit the view
-     * @param canvas
-     */
+
+    // catching the real position on Screen, cut background on size to fit the view
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

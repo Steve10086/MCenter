@@ -21,27 +21,34 @@ import com.astune.mcenter.databinding.ActivityMainBinding;
 import com.astune.mcenter.object.Hook;
 import com.astune.mcenter.object.Room.Device;
 import com.astune.mcenter.object.Room.MCenterDB;
+import com.astune.mcenter.ui.customered.HookedFragment;
 import com.astune.mcenter.utils.PopupMenuUtil;
 import com.astune.mcenter.utils.enums.ActivityState;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
+/**
+ * root activity of the application
+ */
 public class MainActivity extends AppCompatActivity {
+    //
     private MainActivityViewModel viewModel;
-
     protected FragmentManager pageManager;
     private Fragment informationPage;
-
     private ActivityMainBinding layout;
 
+    // declare the position of last touch screen
     private int touchX = 0;
     private int touchY = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //the screen of the application is lock to provide a better layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        //init
         layout = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(layout.getRoot());
 
@@ -51,11 +58,14 @@ public class MainActivity extends AppCompatActivity {
 
         pageManager = getSupportFragmentManager();
 
+        // bind device card content to device list
         viewModel.deviceList.observe(this, devices -> {
             layout.cardList.setCard(devices);
             Log.i("Room", devices.toString());
         });
 
+        //add clickListener to layouts
+        //insertion
         layout.mainTitleBar.createBtn.setOnClickListener(c->{
             try {
                 createBtnClicked();
@@ -63,8 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         });
-
-        //information_page btn
+        //information
         layout.mainTitleBar.userInfoBtn.setOnClickListener(c -> {
             try {
                 infoPageClicked();
@@ -73,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-
+        //device card
         layout.cardList.setOnclickListener((device) ->{
             Log.i("CardList", device.toString() + "clicked");
             try {
@@ -84,12 +93,15 @@ public class MainActivity extends AppCompatActivity {
             return null;
         });
 
+        //update position when touch the background container
         layout.informationContainer.setOnTouchListener((view, motionEvent) -> {
             touchX = (int) motionEvent.getX();
             touchY = (int) motionEvent.getY();
             return false;
         });
 
+        //cannot access compose layout from java, show popup menu on where user touched
+        //add delete & edit option on menu
         layout.cardList.setOnLongClickListener((Function1<Device, Unit>) device -> {
             PopupMenu menu = new PopupMenu(this, layout.mainTitleBar.title);
             menu.getMenuInflater().inflate(R.menu.card_list_popup_menu, menu.getMenu());
@@ -107,18 +119,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // update when go back to activity
     @Override
     public void onResume(){
         super.onResume();
         viewModel.updateOnline();
     }
 
+    // clear the disposable
     @Override
     public void onPause(){
         super.onPause();
         viewModel.finish();
     }
 
+    // start pages
+
+    // link page
     public void deviceCardClicked(Device device) throws NoSuchMethodException, ClassNotFoundException {
         viewModel.title.setValue(device.getName());
         Fragment linkPage = new LinkPage(
@@ -131,16 +148,14 @@ public class MainActivity extends AppCompatActivity {
                                 ActivityState.ON_START)
                 }
         );
-        Bundle bundle = new Bundle(device.toBundle());
-        bundle.putString("viewModelClass", LinkPageViewModel.class.getName());
-        linkPage.setArguments(bundle);
+        linkPage.setArguments(HookedFragment.getDefaultBundle(device.toBundle(), LinkPageViewModel.class));
         FragmentTransaction transaction = pageManager.beginTransaction();
         transaction.replace(R.id.information_container, linkPage);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    //add information page into main stage
+    //information page
     public void infoPageClicked() throws NoSuchMethodException {
         Log.i("Main", "infoClicked");
         if (informationPage == null){
@@ -154,9 +169,7 @@ public class MainActivity extends AppCompatActivity {
                                     ActivityState.ON_START)
                     }
                     );
-            Bundle bundle = new Bundle();
-            bundle.putString("viewModelClass", InformationPageViewModel.class.getName());
-            informationPage.setArguments(bundle);
+            informationPage.setArguments(HookedFragment.getDefaultBundle(InformationPageViewModel.class));
         }
         FragmentTransaction transaction = pageManager.beginTransaction();
         transaction.replace(R.id.information_container, informationPage);
@@ -164,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.commit();
     }
 
+    // start device insertion dialog
     private void createBtnClicked() throws NoSuchMethodException {
         AlertDialog.Builder passwordDialog = new AlertDialog.Builder(this);
         View view = View.inflate(passwordDialog.getContext(), R.layout.device_creation_dialog, null);
@@ -187,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 .create().show();
     }
 
+    //animations for layouts on mainActivity when entering & existing pages
     public void linkPageEntered(){
         Log.i("MainAct", "Info entered");
         layout.mainTitleBar.userInfoBtn.setVisibility(View.INVISIBLE);
@@ -211,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
         layout.cardList.startAnimation(AnimationUtils.loadAnimation(this, R.anim.card_list_slide_half_out));
     }
 
-    //info Page exist animation, hooked into onPause()
     public void infoPageExisted() {
         Log.i("MainAct", "Info existed");
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.card_list_slide_half_in);

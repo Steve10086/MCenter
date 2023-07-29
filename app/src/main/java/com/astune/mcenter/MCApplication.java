@@ -16,6 +16,7 @@ public class MCApplication extends Application {
     public void onCreate(){
         super.onCreate();
         MApp = this;
+        // create database entity
         MCenterDB.Companion.buildDB(this.getApplicationContext());
 
     }}

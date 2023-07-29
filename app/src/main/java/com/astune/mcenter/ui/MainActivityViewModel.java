@@ -26,12 +26,13 @@ public class MainActivityViewModel extends ViewModel {
 
     protected final MutableLiveData<List<Device>> deviceList = new MutableLiveData<>(new ArrayList<>());
 
-    MainActivityViewModel(){
+    MainActivityViewModel(){// get database object when init
         Log.i("MainViewModel", "Started");
         db = MCenterDB.Companion.getDB();
     }
 
 
+    // get device list from database
     public void refreshDeviceList() {
         disposable.add(Completable.fromAction(() ->{
 
@@ -48,6 +49,7 @@ public class MainActivityViewModel extends ViewModel {
         ));
     }
 
+    // refresh the last online time if device is reachable
     public void updateOnline(){
         for (Device device : deviceList.getValue()) {
             disposable.add(Completable.fromAction(() ->{
@@ -66,6 +68,7 @@ public class MainActivityViewModel extends ViewModel {
         }
     }
 
+    // delete event
     public void deleteDevice(Device device){
         disposable.add(db.deviceDao().delete(device).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() ->{
             Log.i("room", "delete complete");
@@ -73,6 +76,7 @@ public class MainActivityViewModel extends ViewModel {
         }));
     }
 
+    // detect if device is reachable
     private boolean isOnline(String ip){
         InetAddress address;
         try {
@@ -88,6 +92,7 @@ public class MainActivityViewModel extends ViewModel {
         return false;
     }
 
+    // insertion event
     public void insertDevice(Device device, Context appContext){
         disposable.add(
                 MCenterDB.Companion.getDB().deviceDao().insert(device)
@@ -99,6 +104,7 @@ public class MainActivityViewModel extends ViewModel {
                         }));
     }
 
+    //called when mainActivity is paused
     public void finish(){
         disposable.clear();
     }

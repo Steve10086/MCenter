@@ -93,6 +93,12 @@ public class LinkInsertionPage extends LinkFragment {
         disposable.clear();
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        layout = null;
+    }
+
     private void insertWebLink(){
         layout.linkSaveBtn.setEnabled(false);
         if (!"".equals(layout.webLinkPort.getText().toString()) && !"".equals(layout.linkName.getText().toString())) {

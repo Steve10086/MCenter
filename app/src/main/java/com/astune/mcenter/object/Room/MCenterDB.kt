@@ -34,7 +34,10 @@ abstract class MCenterDB: RoomDatabase() {
         }
     }
 
-    fun<T:Link> getResponseLinkDao(type: LinkType): LinkDao<T> {
+    /**
+     * get corresponding Dao by the giving linkType
+     */
+    fun<T:Link> getCorrespondingLinkDao(type: LinkType): LinkDao<T> {
         return when(type){
             LinkType.WEB_LINK -> {
                 webLinkDao() as LinkDao<T>

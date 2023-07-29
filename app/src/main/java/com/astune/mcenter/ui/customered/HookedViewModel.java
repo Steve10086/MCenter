@@ -7,6 +7,9 @@ import com.astune.mcenter.utils.enums.ActivityState;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * use with HookedFragment to contain the hooks
+ */
 public class HookedViewModel extends ViewModel {
     protected List<Hook> onCreateHook = new ArrayList<>();
 

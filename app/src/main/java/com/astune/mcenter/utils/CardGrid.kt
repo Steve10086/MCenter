@@ -56,6 +56,14 @@ class RoundedCornerRectangleShape(
     }
 }
 
+/**
+ * a single link grid
+ * structure:
+ * normal: surface(ConstraintLayout(icon, name, info))
+ * newLink: surface(row(icon))
+ *
+ * clickable: onClick & onLongClick both detect on surface
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LinkCard(link: Link,

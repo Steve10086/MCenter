@@ -19,10 +19,12 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class SettingActivityViewModel extends ViewModel {
     private final MutableLiveData<Map<String, String>> settingMap = new MutableLiveData<>(new HashMap<>());
     public LiveData<Map<String, String>> getSettingMap(){return settingMap;}
 
+    //get user information from internal storage
     public void getData(Context context){
         try {
             settingMap.getValue().putAll(PropertiesUtil.getProperty(
@@ -54,6 +56,8 @@ public class SettingActivityViewModel extends ViewModel {
         }
     }
 
+
+    // get avatar from Environment.AVATAR_PATH, copy the default avatar when file not exist
     public Bitmap getAvatar(Context context){
         try {
             InputStream avatarStream = Files.newInputStream(Paths.get(context.getFilesDir() + Environment.AVATAR_PATH));
@@ -82,6 +86,7 @@ public class SettingActivityViewModel extends ViewModel {
         }
     }
 
+    //set avatar to the Environment.AVATAR_PATH
     public void setAvatar(Uri uri, Context context) throws IOException {
         Log.i("Uri", uri.getPath());
         if( new File(context.getFilesDir() + Environment.AVATAR_PATH).isFile()
@@ -105,12 +110,14 @@ public class SettingActivityViewModel extends ViewModel {
         return settingMap.getValue().get(Properties.EMAIL);
     }
 
+    // update the giving key-value pair in livedata, trigger it after finish
     public void updateMap(String key, String value){
         settingMap.getValue().put(key, value);
         settingMap.setValue(settingMap.getValue());
         Log.i("map", key + " updated!");
     }
 
+    //restore the data after changed
     public void saveData(Context context) throws IOException {
         PropertiesUtil.setProperty(context.getFilesDir() + Environment.SETTING_PROPERTIES, settingMap.getValue());
     }

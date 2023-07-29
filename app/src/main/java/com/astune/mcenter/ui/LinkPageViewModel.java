@@ -39,11 +39,12 @@ public class LinkPageViewModel extends HookedViewModel {
         return linkList;
     }
 
+    // get all links below the device by searching every table
     public void refreshLinkTable() {
         disposable.add(Completable.fromAction(() -> {
             List<Link> list = new ArrayList<>();
             for (LinkType t : LinkType.values()) {
-                if (!t.equals(LinkType.NEW_LINK)) list.addAll(db.getResponseLinkDao(t).getByDevice(id));
+                if (!t.equals(LinkType.NEW_LINK)) list.addAll(db.getCorrespondingLinkDao(t).getByDevice(id));
             }
             linkList.postValue(list);
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
@@ -52,8 +53,9 @@ public class LinkPageViewModel extends HookedViewModel {
         }));
     }
 
+    // delete event
     public void deleteLink(@NotNull Link link){
-        disposable.add(db.getResponseLinkDao(link.getType()).delete(link).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(()->{
+        disposable.add(db.getCorrespondingLinkDao(link.getType()).delete(link).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(()->{
             Log.i("LinkViewModel", "Link deleted");
             refreshLinkTable();
         }));

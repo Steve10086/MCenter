@@ -11,14 +11,16 @@ import com.astune.mcenter.utils.enums.ActivityState;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+/** A fragment allows hook for each state
+ * must use with HookedViewModel
+ * this class is not completed yet, not all state are include, which is now the same with states within ActivityState.enum
+ */
 public class HookedFragment extends Fragment {
     private Hook[] hooks;
-
     protected Activity parent;
-
     private HookedViewModel mViewModel;
     private final boolean[] disableHooks = new boolean[]{false, false, false, false, false};
-    private boolean[] isNextHookDisabled = new boolean[]{false, false, false, false, false};
+    private final boolean[] isNextHookDisabled = new boolean[]{false, false, false, false, false};
 
     public HookedFragment(){
         super();
@@ -29,6 +31,11 @@ public class HookedFragment extends Fragment {
         this.hooks = hooks;
     }
 
+    /**
+     * call to get a specific viewModel
+     * @param clazz yourViewModel.class
+     * @return a instance of giving viewModel class
+     */
     public<T extends HookedViewModel> T getViewModel(Class<T> clazz) {
         if (clazz.isInstance(mViewModel)) {
             return (T) mViewModel;
@@ -37,16 +44,28 @@ public class HookedFragment extends Fragment {
         }
     }
 
+    /**
+     * disable hooks in a specific state
+     * @param state ActivityState
+     */
     public void disableHook(int state){
         disableHooks[state] = true;
         isNextHookDisabled[state] = true;
     }
 
+    /**
+     * disable the next hooks in a specific state, each state will count separately, the hooks will be enabled after the on***() is called
+     * @param state ActivityState
+     */
     public void disableNextHook(int state){
         disableHook(state);
         isNextHookDisabled[state] = false;
     }
 
+    /**
+     * trigger the hook on giving state
+     * @param state ActivityState
+     */
     public void doOnStateHooks(int state){
         List<Hook> doHook;
         switch (state){
@@ -82,7 +101,8 @@ public class HookedFragment extends Fragment {
         }
     }
 
-
+    //do onState hooks
+    //init viewModel & requireActivity onCreate
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         this.parent = requireActivity();
@@ -117,9 +137,23 @@ public class HookedFragment extends Fragment {
         doOnStateHooks(ActivityState.ON_STOP);
     }
 
-    public static Bundle setDefaultBundle(Class<com.astune.mcenter.ui.LinkInsertionPageViewModel> viewmodelClass){
-        Bundle bundle = new Bundle();
-        bundle.putString("viewModelClass", viewmodelClass.getName());
+    /**
+     * get bundle with viewModelClass name
+     * @param viewModelClass
+     * @return bundle with "viewModelClass" inside
+     */
+    public static Bundle getDefaultBundle(Class<? extends HookedViewModel> viewModelClass){
+        return HookedFragment.getDefaultBundle(new Bundle(), viewModelClass);
+    }
+
+    /**
+     * get bundle with viewModelClass name
+     * @param bundle
+     * @param viewModelClass
+     * @return bundle with "viewModelClass" inside
+     */
+    public static Bundle getDefaultBundle(Bundle bundle, Class<? extends HookedViewModel> viewModelClass){
+        bundle.putString("viewModelClass", viewModelClass.getName());
         return bundle;
     }
 }

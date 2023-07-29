@@ -17,6 +17,9 @@ import com.astune.mcenter.utils.enums.Properties;
 
 import java.io.IOException;
 
+/**
+ * dataBinding is used in this activity
+ */
 public class SettingActivity extends AppCompatActivity {
     private SettingActivityViewModel viewModel;
 
@@ -34,15 +37,18 @@ public class SettingActivity extends AppCompatActivity {
         layout.setLifecycleOwner(this);
         viewModel.getData(this);
 
+        // set onClickListeners
+
         viewModel.getSettingMap().observe(this, map ->{
             Log.i("setting", map.get(Properties.EMAIL));
         });
 
+        //change password
         layout.setPasswordBtn.setOnClickListener(c ->{
             onPasswordClick();
         });
 
-
+        //hide keyboard when click background
         layout.settingBackground.setOnClickListener(c ->{
             if (null != getCurrentFocus()){
                 ((InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE))
@@ -50,6 +56,7 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
+        //set avatar
         layout.setAvatarBtn.setOnClickListener(c->{
             Log.i("File selector", "opened");
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -78,7 +85,6 @@ public class SettingActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, resultData);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK){
             try {
-
                 viewModel.setAvatar(resultData.getData(), this);
                 layout.avatarImg.setImageBitmap(viewModel.getAvatar(this));
             } catch (IOException e) {
@@ -87,6 +93,7 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
+    // show password dialog
     public void onPasswordClick(){
         AlertDialog.Builder passwordDialog = new AlertDialog.Builder(this);
         View view = View.inflate(passwordDialog.getContext(), R.layout.setting_password_dialog, null);

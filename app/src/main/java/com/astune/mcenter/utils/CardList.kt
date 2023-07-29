@@ -24,6 +24,12 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.astune.mcenter.`object`.Room.Device
 
+/**
+ * single device card
+ * structure: surface(ConstraintLayout(name n/ ip n/ state | btn))
+ *
+ * Clickable: onClick detect on btn, onLongClick detect on surface
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeviceCard (device: Device, modifier: Modifier, onClick: (Device) -> Unit = {}, onLongClick: (Device) -> Unit = {}){
@@ -118,6 +124,9 @@ class DeviceCardList @JvmOverloads constructor(
         this.onLongClick = onLongClick
     }
 
+    /**
+     * A lazy column containing device cards
+     */
     @Composable
     override fun Content() {
         LazyColumn(modifier = Modifier.padding(all = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {

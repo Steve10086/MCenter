@@ -67,10 +67,13 @@ public class LinkPage extends HookedFragment {
     public void onStart(){
         super.onStart();
 
+        //set affect on background
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             layout.linkBackground.setRenderEffect(RenderEffect.createBlurEffect(25F, 25F, Shader.TileMode.CLAMP));
         }
         layout.linkBackground.setSourceView(parent.findViewById(R.id.main_background_image));
+
+        // entering animation
         layout.linkBackground.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -88,31 +91,31 @@ public class LinkPage extends HookedFragment {
             }
         });
 
-        assert getArguments() != null;
-        viewModel.refreshLinkTable();
-
+        //bind grid with cardList
         viewModel.getLinkList().observe(this, cardList ->{
             layout.linkCardList.setCard(cardList);
             layout.linkCardList.addCard(new NewLink(getArguments().getInt("id"), ""));
         });
 
+        //set onclickListeners
+        //link start event
         layout.linkCardList.setOnclickListener(link ->{
             Log.i("linkPage", "Link" + link.getName() + "clicked");
             startFromCard(link);
             return null;
         });
-
+        //goBack
         layout.linkReturnBtn.setOnClickListener(c ->{
             Log.i("linkPage", "exist event");
             getParentFragmentManager().popBackStack();
         });
-
+        //get touching position
         layout.linkPageForeground.setOnTouchListener((view, motionEvent) ->{
             touchX = (int) motionEvent.getX();
             touchY = (int) motionEvent.getY();
             return false;
         });
-
+        //start menu on click position
         layout.linkCardList.setOnLongClickListener((Function1<Link, Unit>) link ->{
             PopupMenu menu = new PopupMenu(parent, layout.linkReturnBtn);
             menu.getMenuInflater().inflate(R.menu.card_list_popup_menu, menu.getMenu());
@@ -126,7 +129,8 @@ public class LinkPage extends HookedFragment {
         });
 
         pageManager = getParentFragmentManager();
-
+        assert getArguments() != null;
+        viewModel.refreshLinkTable();
     }
 
     @Override
@@ -141,6 +145,13 @@ public class LinkPage extends HookedFragment {
         viewModel.refreshLinkTable();
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        layout = null;
+    }
+
+    // exiting animation
     @Override
     public Animator onCreateAnimator(int transit, boolean enter, int nextAnim){
         if (!enter){
@@ -165,8 +176,7 @@ public class LinkPage extends HookedFragment {
         return super.onCreateAnimator(transit, true, nextAnim);
     }
 
-
-
+    //start different fragment basing on the card clicked
     private void startFromCard(Link link){
         FragmentTransaction transaction;
         Bundle bundle;

@@ -6,6 +6,9 @@ import android.view.animation.ScaleAnimation;
 import androidx.fragment.app.Fragment;
 import com.astune.mcenter.R;
 
+/**
+ * A fragment with stated enter & exist animation, used only in different links
+ */
 public class LinkFragment extends Fragment {
     private int pivotX = 0;
     private int pivotY = 0;
@@ -22,6 +25,7 @@ public class LinkFragment extends Fragment {
     @Override
     public Animation onCreateAnimation(int transit, boolean enter, int nextAnim){
         if(enter){
+            // a scaleAnimation starting from a giving point
             Animation animation = new ScaleAnimation(0, 1.05f, 0, 1.05f, Animation.ABSOLUTE, pivotX, Animation.ABSOLUTE, pivotY);
             animation.setDuration(200);
             animation.setAnimationListener(new Animation.AnimationListener() {
@@ -46,6 +50,7 @@ public class LinkFragment extends Fragment {
             });
             return animation;
         }else{
+            // slide away existing animation
             return AnimationUtils.loadAnimation(getActivity(), R.anim.slide_out_right);
         }
     }

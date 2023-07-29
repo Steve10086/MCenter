@@ -4,6 +4,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 
+/**
+ * A hook contains a method & the parameters of the method and the parent class of this method
+ */
 public class Hook {
     private int stateId;
 

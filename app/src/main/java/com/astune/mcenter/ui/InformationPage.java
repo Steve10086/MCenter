@@ -1,6 +1,7 @@
 package com.astune.mcenter.ui;
 
 import android.animation.*;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
@@ -31,10 +32,6 @@ public class InformationPage extends HookedFragment {
     private InformationPageViewModel viewModel;
 
     private boolean enteredFromSetting = false;
-
-    private final Object existLock = new Object();
-
-    private boolean isExisting = false;
 
     public InformationPage() {super();}
     public InformationPage(Hook[] hooks) {
@@ -108,17 +105,12 @@ public class InformationPage extends HookedFragment {
             startActivity(intent);
         });
 
+        //fills data
         setUIData();
     }
 
-    @Override
-    public void onDestroyView(){
-        super.onDestroyView();
-
-        Log.i("info", "view destroyed");
-    }
-
-    public void setUIData(){
+    //fills the information
+    private void setUIData(){
         try {
             Map<String, String> dataMap = PropertiesUtil.getProperty(
                 parent.getFilesDir() + Environment.SETTING_PROPERTIES,
@@ -155,11 +147,10 @@ public class InformationPage extends HookedFragment {
                     @Override
                     public void onAnimationEnd(@NonNull Animator animator) {
                         super.onAnimationEnd(animator);
-                        isExisting = true;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             layout.infoBackground.setRenderEffect(null);
                         }
-                        //Log.i("info", "animation end");
+                        //empty the binding after existing animation completed;
                         layout = null;
                     }
 
