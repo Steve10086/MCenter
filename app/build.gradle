@@ -1,9 +1,10 @@
 plugins {
+    id 'dagger.hilt.android.plugin'
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp' version "$ksp_version"
+    id 'com.google.devtools.ksp'
 }
 
 android {
@@ -54,7 +55,11 @@ android {
 }
 
 dependencies {
-    androidTestImplementation 'junit:junit:4.13.1'
+    implementation(project(":core:ui"))
+    implementation "com.google.dagger:hilt-android:2.47"
+    ksp "com.google.dagger:hilt-android-compiler:2.47"
+
+    androidTestImplementation 'junit:junit:4.13.2'
     var compose_version = "1.4.3"
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
@@ -80,8 +85,6 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
-    // To use Kotlin annotation processing tool (kapt)
-    kapt("androidx.room:room-compiler:$room_version")
     // To use Kotlin Symbol Processing (KSP)
     ksp("androidx.room:room-compiler:$room_version")
 

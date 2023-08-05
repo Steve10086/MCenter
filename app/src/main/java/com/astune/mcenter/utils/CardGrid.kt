@@ -27,10 +27,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.astune.mcenter.R
 import com.astune.mcenter.`object`.Link.Link
-import com.astune.mcenter.`object`.Room.WebLink
 import com.astune.mcenter.utils.enums.LinkType
+import com.astune.mcenter.R
+import com.astune.mcenter.`object`.Room.WebLink
 
 
 class RoundedCornerRectangleShape(
@@ -85,7 +85,7 @@ fun LinkCard(link: Link,
             Row(horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .padding(20.dp)){
-                Image(painterResource(R.drawable.plus_icon),
+                Image(painterResource(id = R.drawable.plus_icon),
                     "insert_link_pic",
                     modifier = Modifier
                         .width(60.dp)

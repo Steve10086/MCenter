@@ -70,7 +70,6 @@ public class SettingActivityViewModel extends ViewModel {
                     || new File(context.getFilesDir().toString() + "/img").mkdirs()){
                 Log.w("File", "Avatar not found");
                 try {
-
                     BitmapFactory.decodeStream(context.getAssets().open("avatar.jpg"))
                             .compress(Bitmap.CompressFormat.JPEG
                                     , 100
