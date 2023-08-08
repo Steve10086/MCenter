@@ -1,10 +1,8 @@
-package com.astune.database
+package com.astune.core.data
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.astune.database.Dao.DaosModule
-import com.astune.mcenter.`object`.Dao.LinkDao
-import dagger.hilt.android.AndroidEntryPoint
+import com.astune.data.respository.DeviceDataRepository
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,14 +16,12 @@ import javax.inject.Inject
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-@AndroidEntryPoint
 class ExampleInstrumentedTest {
-    @Inject
-    lateinit var dao: LinkDao<SSHLink>
     @Test
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.astune.database", dao.toString())
+
+        assertEquals("com.astune.core.data", appContext.packageName)
     }
 }

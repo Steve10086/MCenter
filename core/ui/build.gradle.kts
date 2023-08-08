@@ -1,41 +1,23 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("mcenter.android.library")
 }
 
 android {
-    namespace = "com.astune.ui"
-    compileSdk = 33
+    namespace = "com.astune.core.ui"
 
-    defaultConfig {
-        applicationId = "com.astune.ui"
-        minSdk = 27
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    buildFeatures {
+        compose = true
     }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.3"
     }
 }
 
 dependencies {
     var compose_version = "1.4.3"
 
-    implementation(project(":app"))
+    implementation(project(":core:model"))
+    implementation(project(":core:database"))
 
     //kotlin compose
     implementation("androidx.compose.ui:ui:$compose_version")
@@ -52,7 +34,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.compose.ui:ui-unit:1.4.3")
-    testImplementation("junit:junit:4.13.2")
+
+    testImplementation("androidx.compose.ui:ui-test-junit4:1.4.3")
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

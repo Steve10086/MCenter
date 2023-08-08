@@ -1,4 +1,3 @@
 package com.astune.data
 
-class DataModule {
-}
+class DataModule

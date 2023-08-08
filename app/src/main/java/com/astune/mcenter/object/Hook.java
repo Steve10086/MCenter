@@ -8,13 +8,13 @@ import java.util.List;
  * A hook contains a method & the parameters of the method and the parent class of this method
  */
 public class Hook {
-    private int stateId;
+    private final int stateId;
 
-    private Object[] parameters;
+    private final Object[] parameters;
 
-    private Method method;
+    private final Method method;
 
-    private Object parent;
+    private final Object parent;
 
     public Hook(Method method, Object parent, int stateId, Object... parameters){
         this.method = method;

@@ -3,10 +3,12 @@ package com.astune.mcenter;
 import android.app.Application;
 import androidx.room.util.FileUtil;
 import com.astune.mcenter.object.Room.MCenterDB;
+import dagger.hilt.android.HiltAndroidApp;
 
 import java.io.File;
 import java.io.IOException;
 
+@HiltAndroidApp
 public class MCApplication extends Application {
     private static MCApplication MApp;
 

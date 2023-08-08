@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google()
         mavenCentral()
@@ -12,15 +13,15 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "MCenter"
-include ':app'
-include ':core:ui'
-include ':core:database'
-include ':core:model'
-include ':core:data'
-include ':core:common'
-include ':feature:device'
-include 'build-logic'
-include 'build-logic:convention'
-findProject(':build-logic:convention')?.name = 'convention'
+include (":app")
+include (":core:ui")
+include (":core:database")
+include (":core:model")
+include (":core:data")
+include (":core:common")
+
+include (":feature:device")
+
 

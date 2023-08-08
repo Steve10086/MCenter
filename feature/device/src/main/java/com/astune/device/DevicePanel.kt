@@ -1,5 +1,5 @@
 package com.astune.device
 
 
-class DevicePanel {
-}
+
+class DevicePanel

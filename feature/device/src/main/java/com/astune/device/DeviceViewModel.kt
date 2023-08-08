@@ -6,5 +6,4 @@ import javax.inject.Inject
 class DeviceViewModel @Inject constructor(
     deviceDataRepository: DeviceDataRepository
 
-){
-}
+)

@@ -8,7 +8,7 @@ import com.astune.mcenter.`object`.Dao.*
 import com.astune.mcenter.`object`.Link.Link
 import com.astune.mcenter.utils.enums.LinkType
 
-@Database(entities = [Device::class, WebLink::class, SSHLink::class, ZeroTier::class], version = 1, exportSchema = true)
+@Database(entities = [Device::class, WebLink::class, SSHLink::class, ZeroTier::class], version = 1, exportSchema = false)
 abstract class MCenterDB: RoomDatabase() {
     abstract fun deviceDao(): DeviceDao
     abstract fun webLinkDao(): WebLinkDao

@@ -1,8 +1,8 @@
 package com.astune.mcenter.`object`.Dao
 
 import androidx.room.*
+import com.astune.database.Dao.LinkDao
 import com.astune.database.Device
-import com.astune.database.Link.Link
 import com.astune.database.SSHLink
 import com.astune.database.WebLink
 import com.astune.database.ZeroTier
@@ -40,7 +40,7 @@ interface ZerotierDao {
 
 
 @Dao
-interface WebLinkDao :LinkDao<WebLink>{
+interface WebLinkDao : LinkDao<WebLink> {
     @Query("Select * from weblink")
     override fun getAll():List<WebLink>
 
@@ -61,7 +61,7 @@ interface WebLinkDao :LinkDao<WebLink>{
 }
 
 @Dao
-interface SSHLinkDao: LinkDao<SSHLink>{
+interface SSHLinkDao: LinkDao<SSHLink> {
     @Query("Select * from SSHLink")
     override fun getAll():List<SSHLink>
 

@@ -1,7 +1,5 @@
 package com.astune.ui
 
-import android.content.Context
-import android.util.AttributeSet
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -10,19 +8,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.astune.mcenter.`object`.Room.Device
+import com.astune.database.Device
+
 
 /**
  * single device card
@@ -32,7 +29,7 @@ import com.astune.mcenter.`object`.Room.Device
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DeviceCard (device: Device, modifier: Modifier, onClick: (Device) -> Unit = {}, onLongClick: (Device) -> Unit = {}){
+fun DeviceCard (device: Device, modifier: Modifier, onButtonClick: (Device) -> Unit = {}, onLongClick: (Device) -> Unit = {}){
     Surface (
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
@@ -74,7 +71,7 @@ fun DeviceCard (device: Device, modifier: Modifier, onClick: (Device) -> Unit = 
                     start.linkTo(parent.start, 15.dp)
             })
 
-            Button(onClick = { onClick(device) }, Modifier
+            Button(onClick = { onButtonClick(device) }, Modifier
                 .constrainAs(infoBtn){
                     end.linkTo(parent.end, 5.dp)
                 }
@@ -104,35 +101,29 @@ fun CardPerview(){
     }
 }
 
-class DeviceCardList @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-) : AbstractComposeView(context, attrs) {
-    private var cardList = mutableStateOf(emptyList<Device>())
-    private var onClick: ((Device) -> Unit) = { }
-    private var onLongClick: ((Device) -> Unit) = { }
-    fun setCard(devices: List<Device>){
-        Log.i("CardList" ,"val updated")
-        cardList.value = devices
+@Preview(showBackground = true)
+@Composable
+fun CardListPerview(){
+    val list = ArrayList<Device>()
+    for(id in 0..20){
+        list.add(Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", null))
     }
+    DeviceCardList(
+        modifier = Modifier.padding(8.dp),
+        cardList = list
+    )
+}
 
-    fun setOnclickListener(onClick: (Device) -> Unit){
-        this.onClick = onClick
-    }
-
-    fun setOnLongClickListener(onLongClick: (Device) -> Unit){
-        this.onLongClick = onLongClick
-    }
-
-    /**
-     * A lazy column containing device cards
-     */
-    @Composable
-    override fun Content() {
-        LazyColumn(modifier = Modifier.padding(all = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            items(cardList.value) { card ->
-                DeviceCard(card, modifier = Modifier.padding(10.dp), onClick = onClick, onLongClick = onLongClick)
-            }
+@Composable
+fun DeviceCardList(
+    modifier: Modifier,
+    cardList: MutableList<Device>,
+    onButtonClick: (Device) -> Unit = {},
+    onLongClick: (Device) -> Unit = {}
+){
+    LazyColumn(modifier = Modifier.padding(all = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        items(cardList) { card ->
+            DeviceCard(card, modifier = Modifier.padding(10.dp), onButtonClick = onButtonClick, onLongClick = onLongClick)
         }
     }
 }

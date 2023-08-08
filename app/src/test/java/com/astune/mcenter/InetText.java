@@ -10,6 +10,6 @@ import java.net.UnknownHostException;
 public class InetText {
     @Test
     public void textIp() throws IOException {
-        Assert.assertEquals(InetAddress.getByName("192.168.1.116").isReachable(5000), false);
+        Assert.assertFalse(InetAddress.getByName("192.168.1.116").isReachable(5000));
     }
 }

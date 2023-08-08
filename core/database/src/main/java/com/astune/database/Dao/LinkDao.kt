@@ -1,6 +1,9 @@
-package com.astune.mcenter.`object`.Dao
+package com.astune.database.Dao
 
 import com.astune.database.Link.Link
+import com.astune.model.LinkType
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
 interface LinkDao<T: Link> {
     fun getAll():List<T>
@@ -15,3 +18,8 @@ interface LinkDao<T: Link> {
 
     suspend fun resetPrimaryKey()
 }
+
+
+class LinkDaos @AssistedInject constructor(
+    @Assisted private val type:LinkType
+)
