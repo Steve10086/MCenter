@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import com.astune.data.utils.FileUtil
 import com.astune.datastore.UserDataSource
 import com.astune.model.Environment
@@ -49,20 +50,32 @@ class UserDataRepository @Inject constructor(
         userDataSource.setTheme(theme)
     }
 
-    fun setAvatar(uri:Uri):Boolean{
+    fun setAvatar(uri:Uri):Bitmap?{
+        var newAvatar:Bitmap? = null
         if (File(context.filesDir.toString() + Environment.AVATAR_PATH).isFile
             || File(context.filesDir.toString() + "/img").mkdirs()
         ) {
             val avatarInputStream = context.contentResolver.openInputStream(uri)
             val avatarOutputStream =
                 Files.newOutputStream(Paths.get(context.filesDir.toString() + Environment.AVATAR_PATH))
-            BitmapFactory.decodeStream(avatarInputStream).compress(Bitmap.CompressFormat.JPEG, 100, avatarOutputStream)
+            newAvatar = BitmapFactory.decodeStream(avatarInputStream)
+            val newSize = if(newAvatar.width > newAvatar.height) newAvatar.height else newAvatar.width
+            newAvatar = Bitmap.createBitmap(
+                newAvatar,
+                (newAvatar.width - newSize) / 2,
+                (newAvatar.height - newSize) / 2,
+                newSize,
+                newSize,
+                )
+
+            newAvatar.compress(Bitmap.CompressFormat.JPEG, 100, avatarOutputStream)
             avatarInputStream!!.close()
             avatarOutputStream.close()
         } else {
             FileUtil.delete(context.filesDir.toString() + "/img")
         }
-        return false
+        Log.i("UDR", newAvatar.toString())
+        return newAvatar
     }
 
 

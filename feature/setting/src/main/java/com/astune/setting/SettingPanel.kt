@@ -1,6 +1,8 @@
 package com.astune.setting
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -49,18 +51,20 @@ fun SettingScreen(
     gradientColors: GradientColors = defaultGradientColor(),
     userInfo: UserInfo = UserInfo(),
     onThemeChanged: (String) -> Unit = {},
-    onAvatarChanged: (Uri) -> Unit = {}
+    onAvatarChanged: (Uri) -> Bitmap?
 ){
     var email by remember { mutableStateOf(userInfo.email) }
     var name by remember { mutableStateOf(userInfo.name) }
     var enableZ by remember { mutableStateOf(userInfo.enabledZerotier) }
     var theme by remember { mutableStateOf(userInfo.theme) }
+    var avatar by remember { mutableStateOf(userInfo.avatar) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = {
             it?.let {
-                onAvatarChanged.invoke(it)
+                Log.i("Setting", "avatarUpdated")
+                onAvatarChanged.invoke(it)?.let{avatar = it}
             }
         })
 
@@ -81,7 +85,7 @@ fun SettingScreen(
                     top.linkTo(parent.top, 15.dp)
                     start.linkTo(parent.start, 15.dp)
                 }){
-                    Image(userInfo.avatar.asImageBitmap(), "avatar")
+                    Image(avatar.asImageBitmap(), "avatar")
                     Surface(modifier = Modifier.alpha(0.2f).fillMaxSize(),color = MaterialTheme.colorScheme.scrim){
                         Box(modifier = Modifier.fillMaxSize().clickable {
                             launcher.launch("image/*")
@@ -163,21 +167,6 @@ fun SettingScreen(
     }
 }
 
-@Composable
-fun OpenDocument():Uri {
-    var uri:Uri = Uri.EMPTY
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = {//这里返回的是uri？
-            it?.let {
-                uri = it
-            }
-        })
-
-    launcher.launch("image/*")
-    return uri
-}
-
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO, name = "Light theme")
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark theme")
 annotation class ThemePreview
@@ -186,7 +175,7 @@ annotation class ThemePreview
 @Composable
 fun SettingScreenPreview(){
     MCenterTheme {
-        SettingScreen()
+        SettingScreen(onAvatarChanged = { Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) })
     }
 
 }

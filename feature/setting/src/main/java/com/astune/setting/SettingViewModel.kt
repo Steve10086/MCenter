@@ -1,5 +1,6 @@
 package com.astune.setting
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,9 +22,8 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun updateAvatar(uri: Uri){
-        userDataRepository.setAvatar(uri)
-        getInfo()
+    fun updateAvatar(uri: Uri):Bitmap?{
+        return userDataRepository.setAvatar(uri)
     }
     fun updateUserInfo(userInfo: UserInfo){
         viewModelScope.launch {

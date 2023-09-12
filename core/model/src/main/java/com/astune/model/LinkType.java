@@ -1,17 +1,12 @@
 package com.astune.model;
 
-import android.os.Build;
-import androidx.annotation.RequiresApi;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 
-public enum LinkType {WEB_LINK("WebLink", 0), SSH_LINK("SSHLink", 1), NEW_LINK("NewLink", 3),EMPTY_LINK("", -1);
+public enum LinkType {WEB_LINK("WebLink"), SSH_LINK("SSHLink"), NEW_LINK("NewLink"),EMPTY_LINK("");
     private final String name;
 
-    LinkType(String name, int index){
+    LinkType(String name){
         this.name = name;
     }
 
@@ -28,7 +23,13 @@ public enum LinkType {WEB_LINK("WebLink", 0), SSH_LINK("SSHLink", 1), NEW_LINK("
     }
 
     public static List<LinkType> getApplicableList(){
-        return Arrays.stream(values()).filter(linkType -> linkType != NEW_LINK && linkType != EMPTY_LINK).toList();
+        ArrayList<LinkType> results = new ArrayList<>();
+        for(LinkType value : values()){
+            if(value != NEW_LINK && value != EMPTY_LINK){
+                results.add(value);
+            }
+        }
+        return results;
     }
 
     public static List<String> getNames(List<LinkType> value){
