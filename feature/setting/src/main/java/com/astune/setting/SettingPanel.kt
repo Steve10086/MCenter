@@ -147,6 +147,7 @@ fun SettingScreen(
                                 }
                             }
                             onThemeChanged.invoke(theme)
+                            userInfo.theme = theme
                         })
                 }
                 Row(modifier = Modifier.constrainAs(zerotierSwitch){
