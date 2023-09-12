@@ -32,7 +32,7 @@ import kotlin.jvm.functions.Function1;
  */
 public class MainActivity extends AppCompatActivity {
     //
-    private MainActivityViewModel viewModel;
+    private MainActivityViewMode viewModel;
     protected FragmentManager pageManager;
     private Fragment informationPage;
     private ActivityMainBinding layout;
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         layout = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(layout.getRoot());
 
-        viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(MainActivityViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(MainActivityViewMode.class);
 
         viewModel.refreshDeviceList();
 

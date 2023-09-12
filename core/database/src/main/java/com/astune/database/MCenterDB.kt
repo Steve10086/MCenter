@@ -1,12 +1,11 @@
 package com.astune.database
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
-import com.astune.database.Link.Link
-import com.astune.mcenter.`object`.Dao.*
-import com.astune.model.LinkType
+import com.astune.database.dao.DeviceDao
+import com.astune.database.dao.SSHLinkDao
+import com.astune.database.dao.WebLinkDao
+import com.astune.database.dao.ZerotierDao
 
 @Database(entities = [Device::class, WebLink::class, SSHLink::class, ZeroTier::class], version = 1, exportSchema = false)
 abstract class MCenterDB: RoomDatabase() {

@@ -17,13 +17,27 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             extensions.configure<LibraryExtension> {
                 defaultConfig {
                     testInstrumentationRunner =
-                        "com.google.samples.apps.nowinandroid.core.testing.NiaTestRunner"
+                        "com.astune.core.common.test.MCTestRunner"
                 }
+                configureKotlinAndroid(this)
+                defaultConfig.targetSdk = 34
             }
 
             dependencies {
+                add("implementation", project(":core:model"))
+                add("implementation", project(":core:ui"))
+                add("implementation", project(":core:data"))
+                add("implementation", project(":core:common"))
+
                 add("androidTestImplementation", kotlin("test"))
                 add("testImplementation", kotlin("test"))
+
+                add("implementation", MClibs.findLibrary("androidx.hilt.navigation.compose").get())
+                add("implementation", MClibs.findLibrary("androidx.lifecycle.runtimeCompose").get())
+                add("implementation", MClibs.findLibrary("androidx.lifecycle.viewModelCompose").get())
+                add("implementation", MClibs.findLibrary("androidx.navigation.compose").get())
+
+                add("implementation", MClibs.findLibrary("kotlinx.coroutines.android").get())
             }
         }
     }

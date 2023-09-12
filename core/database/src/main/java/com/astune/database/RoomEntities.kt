@@ -51,7 +51,7 @@ data class ZeroTier(
 
 @Entity
 data class WebLink(
-    @PrimaryKey(autoGenerate = true) val id:Int,
+    @PrimaryKey(autoGenerate = true) override val id:Int,
 
     @ColumnInfo override val name: String,
 
@@ -66,7 +66,7 @@ data class WebLink(
 @Entity
 data class SSHLink(
 
-    @PrimaryKey(autoGenerate = true) val id:Int,
+    @PrimaryKey(autoGenerate = true) override val id:Int,
 
     @ColumnInfo override val name: String,
 

@@ -1,15 +1,16 @@
 plugins {
-    id("kotlin-android")
     id("mcenter.android.library")
-    id("mcenter.android.room")
-    id("mcenter.android.hilt")
     //id("com.google.devtools.ksp")
+    id("mcenter.android.hilt")
+    id("mcenter.android.room")
 
 }
 
 android {
     namespace = "com.astune.core.database"
 }
+
+
 
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")

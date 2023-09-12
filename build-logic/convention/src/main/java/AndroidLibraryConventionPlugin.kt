@@ -15,12 +15,16 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<LibraryExtension> {
+                defaultConfig {
+                    testInstrumentationRunner =
+                        "com.astune.core.common.test.MCTestRunner"
+                }
                 configureKotlinAndroid(this)
                 defaultConfig.targetSdk = 34
             }
             configurations.configureEach {
                 resolutionStrategy {
-                    force(libs.findLibrary("junit4").get())
+                    force(MClibs.findLibrary("junit4").get())
                     force("org.objenesis:objenesis:2.6")
                 }
             }
