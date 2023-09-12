@@ -6,9 +6,6 @@ import java.io.File
  * this method is copied from web, used in error catching blocks to reset the file structure
  */
 object FileUtil {
-    fun getFile(dir: String?, filename: String?): File {
-        return File(dir, filename)
-    }
 
     /**
      * delete file, can ba file or dir
@@ -31,7 +28,7 @@ object FileUtil {
      *
      * @return true if success，else false
      */
-    fun deleteFile(fileName: String?): Boolean {
+    fun deleteFile(fileName: String): Boolean {
         val file = File(fileName)
         // if is file, delete it
         return if (file.exists() && file.isFile) {
