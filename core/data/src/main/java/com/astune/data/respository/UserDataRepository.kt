@@ -25,7 +25,7 @@ class UserDataRepository @Inject constructor(
     fun getAvatar():Bitmap{
         return try {
             BitmapFactory.decodeFile(context.filesDir.toString() + Environment.AVATAR_PATH)
-        }catch (e:FileNotFoundException){
+        }catch (e:NullPointerException){
             try {
                 BitmapFactory.decodeStream(context.assets.open("avatar.jpg"))
             }catch (e:FileNotFoundException){
@@ -34,33 +34,6 @@ class UserDataRepository @Inject constructor(
         }
     }
 
-    /*fun getUserData():Map<String, String>{
-        try {
-          return PropertiesUtil.getProperty(
-                    context.filesDir.toString() + Environment.SETTING_PROPERTIES,
-                    Properties.EMAIL,
-                    Properties.THEME,
-                    Properties.ZEROTIER,
-                    Properties.PASSWORD
-                ).toMap()
-        } catch (e: FileNotFoundException) {
-            Log.w("FileIO", "property not found")
-            return try {
-                File(context.filesDir.toString() + Environment.SETTING_PROPERTIES).deleteOnExit()
-                Files.copy(
-                    context.assets.open("userSetting.properties"),
-                    Paths.get(context.filesDir.toString() + Environment.SETTING_PROPERTIES)
-                )
-                Log.i("FileIO", "property copied")
-                getUserData()
-            } catch (ex: IOException) {
-                FileUtil.delete(context.filesDir.toString() + "/properties")
-                getUserData()
-            }
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
-    }*/
 
     suspend fun getUserData():UserInfo{
         val info: UserInfo = userDataSource.userData.first()
