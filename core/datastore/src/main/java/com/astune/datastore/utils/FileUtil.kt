@@ -1,4 +1,4 @@
-package com.astune.data.utils
+package com.astune.datastore.utils
 
 import java.io.File
 
@@ -7,7 +7,7 @@ import java.io.File
  */
 object FileUtil {
     fun getFile(dir: String?, filename: String?): File {
-        return File(dir, filename)
+        return File(dir, filename?:"")
     }
 
     /**
@@ -32,8 +32,8 @@ object FileUtil {
      * @return true if success，else false
      */
     fun deleteFile(fileName: String?): Boolean {
-        val file = File(fileName)
-        // if is file, delete it
+        val file = File(fileName?:"")
+        // if file exist, delete
         return if (file.exists() && file.isFile) {
             file.delete()
         } else {
@@ -50,7 +50,7 @@ object FileUtil {
     fun deleteDirectory(dir: String): Boolean {
         // add separator automatically if needed
         var pathname = dir
-        if (!pathname.endsWith(File.separator)) pathname = pathname + File.separator
+        if (!pathname.endsWith(File.separator)) pathname += File.separator
         val dirFile = File(pathname)
         // exit if not a dir or not exist
         if (!dirFile.exists() || !dirFile.isDirectory) {

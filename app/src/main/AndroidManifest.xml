@@ -17,21 +17,9 @@
             android:theme="@style/Theme.MCenter"
             android:usesCleartextTraffic="true"
             tools:targetApi="33">
+
         <activity
-                android:name=".ui.MainActivity"
-                android:exported="false"
-                android:label="@string/title_activity_main"
-                android:theme="@style/Theme.MCenter"/>
-        <activity
-                android:name=".ui.SettingActivity"
-                android:exported="false"
-                android:label="@string/title_activity_setting">
-            <meta-data
-                    android:name="android.app.lib_name"
-                    android:value=""/>
-        </activity>
-        <activity
-                android:name=".MainActivity"
+                android:name=".ainActivity"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val userDataRepository: UserDataRepository
+    userDataRepository: UserDataRepository
 ): ViewModel(){
     var userInfo : StateFlow<UserInfo> = userDataRepository.userData.stateIn(
         scope = viewModelScope,

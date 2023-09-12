@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class ainActivity : ComponentActivity() {
 
     val viewModel : MainViewModel by viewModels()
 
