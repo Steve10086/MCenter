@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
     id 'mcenter.android.hilt'
-}
+ }
 
 android {
     namespace 'com.astune.mcenter'
@@ -27,9 +27,6 @@ android {
             annotationProcessorOptions{
                 arguments = ["room.schemaLocation": "$projectDir/schema".toString()]
             }
-        }
-        vectorDrawables {
-            useSupportLibrary true
         }
     }
 
@@ -99,41 +96,6 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
     implementation "androidx.compose.foundation:foundation:$compose_version"
 
-
-
-    var room_version = "2.5.2"
-
-    implementation("androidx.room:room-runtime:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
-
-    //Room
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
-
-    // To use Kotlin Symbol Processing (KSP)
-    ksp("androidx.room:room-compiler:$room_version")
-
-    // Kotlin Extensions and Coroutines support for Room
-    implementation(libs.room.ktx)
-
-    // RxJava2 support for Room
-    implementation("androidx.room:room-rxjava2:$room_version")
-
-    // RxJava3 support for Room
-    implementation("androidx.room:room-rxjava3:$room_version")
-
-    implementation(libs.rxandroid)
-
-
-
-    // Guava support for Room, including Optional and ListenableFuture
-    implementation("androidx.room:room-guava:$room_version")
-
-    // Test helpers
-    testImplementation("androidx.room:room-testing:$room_version")
-
-    // Paging 3 Integration
-    implementation("androidx.room:room-paging:$room_version")
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
