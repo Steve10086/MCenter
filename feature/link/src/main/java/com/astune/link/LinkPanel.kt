@@ -23,6 +23,7 @@ import com.astune.core.ui.LinkCardGrid
 import com.astune.core.ui.LocalRootUIState
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.database.Device
+import com.astune.database.Link.EmptyLink
 import com.astune.database.Link.Link
 import com.astune.database.Link.NewLink
 import com.astune.database.SSHLink
@@ -58,6 +59,7 @@ internal fun LinkScreen(
     val parentId = parentDevice.id
 
     var showInsertDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     var position by remember { mutableStateOf(Offset.Zero) }
     var currentLink by remember { mutableStateOf<Link>(WebLink(-1, "", -1, "")) }
@@ -96,6 +98,7 @@ internal fun LinkScreen(
                     onClick =
                     {
                         showInsertDialog = true
+                        showEditDialog = true
                         expended = false
                      }
                 )
@@ -119,9 +122,13 @@ internal fun LinkScreen(
             })
 
         if(showInsertDialog){
-            Dialog(onDismissRequest = { showInsertDialog = false }){
+            Dialog(onDismissRequest = {
+                showInsertDialog = false
+                showEditDialog = false
+            }){
                 LinkSetting(
                     parentId = parentId,
+                    link = if(showEditDialog) currentLink else EmptyLink(),
                     onComplete = {
                         onLinkInserted.invoke(it)
                         showInsertDialog = !showInsertDialog

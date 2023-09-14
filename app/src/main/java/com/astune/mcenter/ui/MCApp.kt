@@ -191,7 +191,7 @@ internal fun McBackground(
                                 offset = position,
                                 background = background,
                                 modifier = Modifier
-                                    .fillMaxWidth(0.4F),
+                                    .fillMaxWidth(0.5F),
                                 scrSize = screenSize,
                                 userInfo = userInfo)
                         }
@@ -234,7 +234,6 @@ internal fun SideBar(
                 Box(modifier = Modifier.fillMaxWidth(0.8f)){
                     Column {
                         Text(userInfo.name, style = MaterialTheme.typography.bodyLarge)
-                        Text("Email:", style = MaterialTheme.typography.headlineSmall)
                         Text(userInfo.email, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
