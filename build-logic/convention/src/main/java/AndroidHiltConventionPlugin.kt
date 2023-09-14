@@ -12,6 +12,7 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
                 "kapt"(MClibs.findLibrary("hilt.compiler").get())
                 "kaptAndroidTest"(MClibs.findLibrary("hilt.compiler").get())
                 "implementation"(MClibs.findLibrary("hilt.android").get())
+                "androidTestImplementation"(MClibs.findLibrary("hilt.android.testing").get())
             }
         }
     }
