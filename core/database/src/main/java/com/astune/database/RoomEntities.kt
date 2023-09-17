@@ -1,6 +1,9 @@
 package com.astune.database
 
 import android.os.Bundle
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.os.bundleOf
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -21,11 +24,11 @@ data class Device(
 
 
 ) {
-    @Ignore
-    var isOnLine: Boolean = false
+    @get:Ignore
+    var delay by mutableStateOf("")
 
     override fun toString(): String {
-        return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline], isOnline: $isOnLine")
+        return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline], deLay: $delay")
     }
 
     fun toBundle(): Bundle {
@@ -34,7 +37,7 @@ data class Device(
             Pair("name", name),
             Pair("ip", ip),
             Pair("lasOnline", lastOnline),
-            Pair("isOnline", isOnLine)
+            Pair("isOnline", delay)
         )
     }
 }

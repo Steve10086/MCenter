@@ -1,7 +1,6 @@
 package com.astune.device
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -62,7 +61,7 @@ internal fun DeviceScreen(
     var showInsertDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var position by remember { mutableStateOf(Offset.Zero) }
-    var currentDevice by remember { mutableStateOf(Device(-1, "", "", null)) }
+    var currentDevice by remember { mutableStateOf(Device(-1, "", "", "0")) }
 
     LocalRootUIState.current.setOnRightBtnClicked(key = "device") {
         showInsertDialog = true
@@ -108,7 +107,7 @@ internal fun DeviceScreen(
                 position = offset
                 expended = true
                 currentDevice = device
-                Log.i("devicepanel", "long click $offset")
+                //Log.i("devicepanel", "long click $offset")
             }
         )
     }
@@ -175,7 +174,7 @@ internal fun DeviceScreen(
 
 @Composable
 fun DeviceSetting(
-    device: Device = Device(0, "", "", null),
+    device: Device = Device(0, "", "", "0"),
     onComplete: (Device) -> Unit = {},
     onDismiss: () -> Unit = {}
 ){
@@ -202,7 +201,7 @@ fun DeviceSetting(
                     if(name == "" || ip == ""){
                         Toast.makeText(context, "empty name or ip", Toast.LENGTH_SHORT).show()
                     } else {
-                        onComplete.invoke(Device(device.id, name, ip, null))
+                        onComplete.invoke(Device(device.id, name, ip, "0"))
                     }
                 }
                 ){
@@ -220,7 +219,7 @@ fun DeviceSetting(
 @ThemePreview
 @Composable
 internal fun DeviceInfoPreview(){
-    val device = Device(0, "testDevice", "0", null)
+    val device = Device(0, "testDevice", "0", "0")
     Dialog(
         onDismissRequest = {}
     ){
@@ -233,7 +232,7 @@ internal fun DeviceInfoPreview(){
 internal fun PanelPreview(){
     val deviceList = ArrayList<Device>()
     for(i in 1..15){
-        deviceList.add(Device(0, "testdevice", "null", null))
+        deviceList.add(Device(0, "testdevice", "null", "0"))
     }
     MCenterTheme {
         DeviceScreen(modifier = Modifier.fillMaxSize(), deviceList)

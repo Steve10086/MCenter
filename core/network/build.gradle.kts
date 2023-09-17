@@ -10,6 +10,5 @@ android {
 dependencies {
     implementation(project(":core:common"))
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.test)
-    implementation(libs.hilt.android.testing)
+
 }

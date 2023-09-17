@@ -186,6 +186,6 @@ internal fun PanelPreview(){
         linkList.add(WebLink(0, "$i", 0, "test info"))
     }
     MCenterTheme {
-        LinkScreen(linkList = linkList, Device(0, "0", "0", null))
+        LinkScreen(linkList = linkList, Device(0, "0", "0", "0"))
     }
 }

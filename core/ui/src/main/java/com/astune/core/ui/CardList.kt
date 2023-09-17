@@ -78,7 +78,7 @@ fun DeviceCard (device: Device,
                 })
 
                 Text(
-                    if (device.lastOnline != null) device.lastOnline.orEmpty() else "online",
+                    if(device.delay == "") "offline" else device.delay,
                     Modifier.constrainAs(lastOnline) {
                         bottom.linkTo(parent.bottom, 10.dp)
                         start.linkTo(parent.start, 15.dp)
@@ -106,7 +106,7 @@ fun DeviceCard (device: Device,
 @Preview(showBackground = true)
 @Composable
 fun CardPerview(){
-    val device = Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", null)
+    val device = Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", "0")
     DeviceCard(
         device = device,
         modifier = Modifier.padding(8.dp)
@@ -118,7 +118,7 @@ fun CardPerview(){
 fun CardListPerview(){
     val list = ArrayList<Device>()
     for(id in 0..20){
-        list.add(Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", null))
+        list.add(Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", "0"))
     }
     DeviceCardList(
         modifier = Modifier.padding(8.dp),
