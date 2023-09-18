@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.astune.core.network.repository.NetWorkRepository
 import com.astune.data.respository.DeviceDataRepository
 import com.astune.data.utils.getTimeBetween
@@ -20,9 +21,13 @@ import javax.inject.Inject
 class DeviceViewModel @Inject constructor(
     private val deviceDataRepository: DeviceDataRepository,
     private val netWorkRepository: NetWorkRepository,
+    private val workManager: WorkManager,
 ): ViewModel() {
     private var devices by mutableStateOf(emptyList<Device>())
 
+    init {
+        workManager.enqueueUniquePeriodicWork("GetDevicePing")
+    }
     fun getDeviceList(): List<Device> {
         viewModelScope.launch{
             deviceDataRepository.getDeviceList().collect{ value -> devices = value}

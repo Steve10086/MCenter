@@ -31,3 +31,5 @@ include("feature:link")
 findProject(":feature:link")?.name = "link"
 include("core:network")
 findProject(":core:network")?.name = "network"
+include("core:sync")
+findProject(":core:sync")?.name = "sync"
