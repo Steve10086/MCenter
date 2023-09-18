@@ -3,6 +3,7 @@ package com.astune.mcenter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() {
 
     val viewModel : MainViewModel by viewModels()
 
@@ -44,6 +45,8 @@ class ainActivity : ComponentActivity() {
                     .collect()
             }
         }
+
+        enableEdgeToEdge()
 
         setContent {
             MCenterTheme (useDarkTheme = shouldUseDarkTheme(userInfo)) {

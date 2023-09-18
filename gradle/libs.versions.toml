@@ -1,4 +1,5 @@
 [versions]
+androidxActivity = "1.8.0-beta01"
 androidGradlePlugin = "8.1.0"
 
 androidxCompose = "1.4.3"
@@ -13,6 +14,8 @@ androidxHiltNavigationCompose = "1.0.0"
 androidxLifecycle = "2.6.1"
 
 androidxTestRunner = "1.5.2"
+
+androidxWork = "2.8.1"
 
 firebaseCrashlyticsPlugin = "2.9.8"
 firebasePerfPlugin = "1.4.2"
@@ -40,6 +43,8 @@ activity-compose = "1.7.2"
 compose-bom = "2023.03.00"
 
 [libraries]
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
+
 androidx-compose-constraintlayout = {group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "androidxComposeConstraintlayout"}
 androidx-compose-foundation = {group = "androidx.compose.foundation", name = "foundation", version.ref = "androidxCompose"}
 androidx-compose-material = {group = "androidx.compose.material", name = "material", version.ref = "androidxCompose"}
@@ -63,7 +68,7 @@ androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navig
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
-
+androidx-work = {group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork"}
 hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "hilt"}
 hilt-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt"}
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }

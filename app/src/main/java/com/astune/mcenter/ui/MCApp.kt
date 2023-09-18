@@ -48,7 +48,6 @@ fun McApp(
 ){
     val mcAppState = rememberMCAppState()
 
-
     McBackground (
         onCaptureUserInfo = {mcBackgroundViewModel.getUserInfo()},
         mcAppState = mcAppState,

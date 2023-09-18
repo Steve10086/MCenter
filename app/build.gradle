@@ -1,9 +1,6 @@
 plugins {
-    id 'dagger.hilt.android.plugin'
-    id 'kotlin-kapt'
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp'
     id 'mcenter.android.hilt'
  }
 
@@ -17,7 +14,7 @@ android {
         minSdk 27
         targetSdk 33
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0.1"
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled(true)
 
@@ -66,8 +63,7 @@ dependencies {
     implementation libs.ui.tooling.preview
     implementation libs.androidx.compose.material3
     androidTestImplementation platform(libs.compose.bom)
-    androidTestImplementation libs.androidx.compose.ui.test
-    debugImplementation libs.ui.test.manifest
+    implementation(libs.androidx.activity.compose)
 
     implementation(project(":core:ui"))
     implementation(project(":core:common"))
@@ -83,27 +79,17 @@ dependencies {
 
     androidTestImplementation libs.junit4
     var compose_version = "1.4.3"
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
-    implementation 'androidx.preference:preference-ktx:1.2.0'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.6.0'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.6.0'
 
     //kotlin compose
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    implementation libs.androidx.compose.constraintlayout
     implementation "androidx.compose.foundation:foundation:$compose_version"
 
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'

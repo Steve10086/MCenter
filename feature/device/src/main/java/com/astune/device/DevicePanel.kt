@@ -174,7 +174,7 @@ internal fun DeviceScreen(
 
 @Composable
 fun DeviceSetting(
-    device: Device = Device(0, "", "", "0"),
+    device: Device = Device(0, "", "", null),
     onComplete: (Device) -> Unit = {},
     onDismiss: () -> Unit = {}
 ){
@@ -201,7 +201,7 @@ fun DeviceSetting(
                     if(name == "" || ip == ""){
                         Toast.makeText(context, "empty name or ip", Toast.LENGTH_SHORT).show()
                     } else {
-                        onComplete.invoke(Device(device.id, name, ip, "0"))
+                        onComplete.invoke(Device(device.id, name, ip, null))
                     }
                 }
                 ){
@@ -219,7 +219,7 @@ fun DeviceSetting(
 @ThemePreview
 @Composable
 internal fun DeviceInfoPreview(){
-    val device = Device(0, "testDevice", "0", "0")
+    val device = Device(0, "testDevice", "0", null)
     Dialog(
         onDismissRequest = {}
     ){
@@ -232,7 +232,7 @@ internal fun DeviceInfoPreview(){
 internal fun PanelPreview(){
     val deviceList = ArrayList<Device>()
     for(i in 1..15){
-        deviceList.add(Device(0, "testdevice", "null", "0"))
+        deviceList.add(Device(0, "testdevice", "null", null))
     }
     MCenterTheme {
         DeviceScreen(modifier = Modifier.fillMaxSize(), deviceList)
