@@ -1,13 +1,11 @@
 package com.astune.device
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
-import com.astune.core.network.repository.NetWorkRepository
+import com.astune.core.sync.MCWorkManager.SyncManager
 import com.astune.data.respository.DeviceDataRepository
 import com.astune.data.utils.getTimeBetween
 import com.astune.database.Device
@@ -20,23 +18,38 @@ import javax.inject.Inject
 @HiltViewModel
 class DeviceViewModel @Inject constructor(
     private val deviceDataRepository: DeviceDataRepository,
-    private val netWorkRepository: NetWorkRepository,
-    private val workManager: WorkManager,
+    private val syncManager: SyncManager
 ): ViewModel() {
     private var devices by mutableStateOf(emptyList<Device>())
 
-    init {
-        workManager.enqueueUniquePeriodicWork("GetDevicePing")
-    }
     fun getDeviceList(): List<Device> {
         viewModelScope.launch{
             deviceDataRepository.getDeviceList().collect{ value -> devices = value}
         }
-        getDelay()
         return devices
     }
 
-    fun getDelay() {
+    fun getDelay(ip:List<String>){
+        viewModelScope.launch {
+            syncManager.pingSync(ip).collect(){
+                for(device in devices){
+                    val delay = it[device.ip]?.toInt()
+                    if ((delay ?: -1) > -1){
+                        device.delay = "${delay} ms"
+                        device.lastOnline = Instant.now().toString()
+                    }else if (device.lastOnline == null) {
+                        device.delay = "offline"
+                    } else {
+                        device.delay = getTimeBetween(
+                            Instant.parse(device.lastOnline)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /*fun getDelay() {
         var delay: Int
         for (device in devices) {
             viewModelScope.launch {
@@ -64,13 +77,14 @@ class DeviceViewModel @Inject constructor(
                 }
             }
         }
-    }
+    }*/
 
     fun delete(device: Device){
         viewModelScope.launch {
             deviceDataRepository.deleteDevice(device)
             deviceDataRepository.getDeviceList().collect{ value -> devices = value}
         }
+        getDelay(devices.getIp())
     }
 
     fun insert(device: Device){
@@ -78,5 +92,10 @@ class DeviceViewModel @Inject constructor(
             deviceDataRepository.insertDevice(device)
             deviceDataRepository.getDeviceList().collect{ value -> devices = value }
         }
+    }
+
+    internal fun List<Device>.getIp():List<String>{
+        //TODO
+        return emptyList()
     }
 }

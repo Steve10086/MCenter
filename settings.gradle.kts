@@ -21,15 +21,11 @@ include (":core:database")
 include (":core:model")
 include (":core:data")
 include (":core:common")
+include("core:datastore")
+include("core:network")
+include("core:sync")
 
 include (":feature:device")
-include("core:datastore")
-findProject(":core:datastore")?.name = "datastore"
 include("feature:setting")
-findProject(":feature:setting")?.name = "setting"
 include("feature:link")
-findProject(":feature:link")?.name = "link"
-include("core:network")
-findProject(":core:network")?.name = "network"
-include("core:sync")
-findProject(":core:sync")?.name = "sync"
+

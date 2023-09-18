@@ -18,7 +18,7 @@ class PingSynchronizer @AssistedInject constructor(
     ctx,
     params,) {
     override suspend fun doWork(): Result {
-        val ipList = inputData.getString("ip")?.split(" ")?: emptyList()
+        val ipList = inputData.keyValueMap["ip"] as List<String>
         val results = mutableMapOf<String, Double>()
         for (ip in ipList){
             networkRepository.getAveragePing(ip, 5).collect(){

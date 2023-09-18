@@ -12,5 +12,5 @@ dependencies {
 
 
     implementation(libs.androidx.work)
-    implementation(libs.androidx.hilt.common)
+    implementation(libs.hilt.ext.work)
 }

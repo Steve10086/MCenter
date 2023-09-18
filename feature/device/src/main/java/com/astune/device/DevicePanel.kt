@@ -39,7 +39,8 @@ fun DevicePanel(
         onDeviceCardBtnClicked = {device ->  onNavigateToLink(device.id.toString())},
         deleteDevice = {device ->  deviceViewModel.delete(device) },
         insertDevice = {device ->  deviceViewModel.insert(device) },
-        editDevice = {device ->  deviceViewModel.insert(device) }
+        editDevice = {device ->  deviceViewModel.insert(device) },
+        onRefresh = {}
     )
 
 }
@@ -52,6 +53,7 @@ internal fun DeviceScreen(
     modifier: Modifier,
     deviceList: List<Device>,
     onDeviceCardBtnClicked: (Device) -> Unit = {},
+    onRefresh: () -> Unit = {},
     deleteDevice: (Device) -> Unit = {},
     editDevice: (Device) -> Unit = {},
     insertDevice: (Device) -> Unit = {},
@@ -213,8 +215,8 @@ fun DeviceSetting(
             }
         }
     }
-
 }
+
 
 @ThemePreview
 @Composable
