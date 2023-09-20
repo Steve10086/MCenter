@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:sync"))
 
-    implementation(libs.androidx.work)
+    implementation(libs.androidx.work.ktx)
     implementation(libs.accompanist.swiperefresh)
 
 

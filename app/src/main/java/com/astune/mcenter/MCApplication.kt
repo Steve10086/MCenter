@@ -17,12 +17,11 @@ class MCApplication : Application(), Configuration.Provider {
     }
 
     /**
-     * @return The [Configuration] used to initialize WorkManager
+     * The [Configuration] used to initialize WorkManager
      */
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .build()
-    }
 
 }

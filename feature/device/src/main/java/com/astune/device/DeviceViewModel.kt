@@ -1,5 +1,6 @@
 package com.astune.device
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +13,7 @@ import com.astune.database.Device
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
@@ -33,12 +35,14 @@ class DeviceViewModel @Inject constructor(
     }
 
     fun getDelay():StateFlow<Boolean>{
+        if(!refresh.value)
         viewModelScope.launch {
-            refresh.value = true
-            syncManager.pingSync(devices.getIp()).collect(){
+            refresh.emit(true)
+            Log.i("DeviceVM", "refreshing")
+            syncManager.pingSync(devices.getIp()).stateIn(viewModelScope).collect(){
                 for(device in devices){
-                    val delay = it[device.ip]?.toInt()
-                    if ((delay ?: -1) > -1){
+                    val delay = it.outputData.getDouble(device.ip, (-1).toDouble()).toInt()
+                    if (delay > -1){
                         device.delay = "$delay ms"
                         device.lastOnline = Instant.now().toString()
                     }else if (device.lastOnline == null) {
@@ -49,7 +53,8 @@ class DeviceViewModel @Inject constructor(
                         )
                     }
                 }
-                refresh.value = false
+                refresh.emit(false)
+                Log.i("DeviceVM", "refreshing ended!")
             }
         }
         return refresh

@@ -1,12 +1,11 @@
 package com.astune.core.sync.MCWorkManager
 
 import android.content.Context
-import androidx.lifecycle.Observer
 import androidx.work.*
 import com.astune.core.sync.PingSynchronizer
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -14,34 +13,26 @@ class SyncManager @Inject constructor(@ApplicationContext private val ctx : Cont
 
     private val workManager = WorkManager.getInstance(ctx)
 
-    private val mutableStateFlow = MutableStateFlow<Map<String, Double>>(emptyMap())
+   fun pingSync(ip: List<String>): Flow<WorkInfo> {
 
-    private val workObserver:Observer<List<WorkInfo>> = Observer{results ->
-        results.size.takeIf { it > 0 }?.let {
-            mutableStateFlow.value =
-                results[0].outputData.keyValueMap as Map<String, Double>
-        }
-    }
-
-    fun pingSync(ip: List<String>): StateFlow<Map<String, Double>> {
-
-        val syncWork = PeriodicWorkRequestBuilder<PingSynchronizer>(15, TimeUnit.MINUTES).setInputData(workDataOf("ip" to ip.toTypedArray()))
+        val syncWork = PeriodicWorkRequestBuilder<PingSynchronizer>(
+            15,
+            TimeUnit.MINUTES
+        ).setInputData(workDataOf("ip" to ip.toTypedArray()))
             .build()
-
-        val result:StateFlow<Map<String, Double>> = mutableStateFlow
 
         workManager.enqueueUniquePeriodicWork(
             PingSync,
             ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             syncWork
         )
-        workManager.getWorkInfosByTagLiveData(PingSync).observeForever(workObserver)
+        return workManager.getWorkInfosForUniqueWorkFlow(PingSync).map {
+            return@map it[0]
+        }
 
-        return result
     }
 
     fun stopPing(){
-        workManager.getWorkInfosByTagLiveData(PingSync).removeObserver(workObserver)
         workManager.cancelUniqueWork(PingSync)
     }
 }

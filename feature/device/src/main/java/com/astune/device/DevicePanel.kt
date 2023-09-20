@@ -1,5 +1,6 @@
 package com.astune.device
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -38,6 +39,7 @@ fun DevicePanel(
     DisposableEffect(Unit) {
         onDispose {
             deviceViewModel.stopPing()
+            Log.i("Device", "Disposed")
         }
     }
 
@@ -48,7 +50,11 @@ fun DevicePanel(
         deleteDevice = { device ->  deviceViewModel.delete(device) },
         insertDevice = { device ->  deviceViewModel.insert(device) },
         editDevice = { device ->  deviceViewModel.insert(device) },
-        onRefresh = {refreshState}
+        onRefresh = {
+            Log.i("Device", "Refreshed")
+            deviceViewModel.getDelay()
+            return@DeviceScreen refreshState
+        }
     )
 
 }
@@ -71,7 +77,9 @@ internal fun DeviceScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     var position by remember { mutableStateOf(Offset.Zero) }
     var currentDevice by remember { mutableStateOf(Device(-1, "", "", "0")) }
-    val swipeRefresh= rememberSwipeRefreshState(isRefreshing = onRefresh.invoke())
+
+    var refresh by remember { mutableStateOf(false) }
+    var swipeRefresh = rememberSwipeRefreshState(isRefreshing = refresh)
 
     LocalRootUIState.current.setOnRightBtnClicked(key = "device") {
         showInsertDialog = true
@@ -109,7 +117,7 @@ internal fun DeviceScreen(
         }}
         SwipeRefresh(
             state = swipeRefresh,
-            onRefresh = { onRefresh.invoke() }
+            onRefresh = { refresh = onRefresh.invoke() }
         ){
             DeviceCardList(
                 modifier = Modifier,

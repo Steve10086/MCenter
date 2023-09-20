@@ -11,7 +11,9 @@ dependencies {
     implementation(project(":core:network"))
     kapt(libs.hilt.ext.compiler)
 
-    implementation(libs.androidx.work)
+    implementation(libs.androidx.work.ktx)
     implementation(libs.hilt.ext.work)
+
+    androidTestImplementation(libs.androidx.work.testing)
 
 }
