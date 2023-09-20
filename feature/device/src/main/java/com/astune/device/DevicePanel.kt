@@ -1,6 +1,5 @@
 package com.astune.device
 
-import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -24,6 +23,8 @@ import com.astune.core.ui.design.ThemePreview
 import com.astune.core.ui.setOnRightBtnClicked
 import com.astune.database.Device
 import com.astune.ui.DeviceCardList
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DevicePanel(
@@ -32,28 +33,34 @@ fun DevicePanel(
     onNavigateToLink: (String) -> Unit,
 ){
     val deviceList = deviceViewModel.getDeviceList()
+    val refreshState by deviceViewModel.getDelay().collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            deviceViewModel.stopPing()
+        }
+    }
 
     DeviceScreen(
         modifier = modifier,
         deviceList = deviceList,
-        onDeviceCardBtnClicked = {device ->  onNavigateToLink(device.id.toString())},
-        deleteDevice = {device ->  deviceViewModel.delete(device) },
-        insertDevice = {device ->  deviceViewModel.insert(device) },
-        editDevice = {device ->  deviceViewModel.insert(device) },
-        onRefresh = {}
+        onDeviceCardBtnClicked = { device ->  onNavigateToLink(device.id.toString())},
+        deleteDevice = { device ->  deviceViewModel.delete(device) },
+        insertDevice = { device ->  deviceViewModel.insert(device) },
+        editDevice = { device ->  deviceViewModel.insert(device) },
+        onRefresh = {refreshState}
     )
 
 }
 
 
 
-@SuppressLint("UnrememberedMutableState")
 @Composable
 internal fun DeviceScreen(
     modifier: Modifier,
     deviceList: List<Device>,
     onDeviceCardBtnClicked: (Device) -> Unit = {},
-    onRefresh: () -> Unit = {},
+    onRefresh: () -> Boolean = { false },
     deleteDevice: (Device) -> Unit = {},
     editDevice: (Device) -> Unit = {},
     insertDevice: (Device) -> Unit = {},
@@ -64,6 +71,7 @@ internal fun DeviceScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     var position by remember { mutableStateOf(Offset.Zero) }
     var currentDevice by remember { mutableStateOf(Device(-1, "", "", "0")) }
+    val swipeRefresh= rememberSwipeRefreshState(isRefreshing = onRefresh.invoke())
 
     LocalRootUIState.current.setOnRightBtnClicked(key = "device") {
         showInsertDialog = true
@@ -99,19 +107,23 @@ internal fun DeviceScreen(
                 }
             )
         }}
+        SwipeRefresh(
+            state = swipeRefresh,
+            onRefresh = { onRefresh.invoke() }
+        ){
+            DeviceCardList(
+                modifier = Modifier,
+                cardList = deviceList,
+                onButtonClick = onDeviceCardBtnClicked,
+                onLongClick = { offset, device ->
+                    position = offset
+                    expended = true
+                    currentDevice = device
+                    //Log.i("devicepanel", "long click $offset")
+                }
+            )
+        }
 
-
-        DeviceCardList(
-            modifier = Modifier,
-            cardList = deviceList,
-            onButtonClick = onDeviceCardBtnClicked,
-            onLongClick = { offset, device ->
-                position = offset
-                expended = true
-                currentDevice = device
-                //Log.i("devicepanel", "long click $offset")
-            }
-        )
     }
 
     if (showDeleteDialog) {

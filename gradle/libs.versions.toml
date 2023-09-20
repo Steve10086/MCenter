@@ -1,4 +1,5 @@
 [versions]
+accompanistSwiperefresh = "0.30.1"
 androidxActivity = "1.8.0-beta01"
 androidGradlePlugin = "8.1.0"
 
@@ -44,6 +45,7 @@ activity-compose = "1.7.2"
 compose-bom = "2023.03.00"
 
 [libraries]
+accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
 
 androidx-compose-constraintlayout = {group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "androidxComposeConstraintlayout"}
@@ -70,12 +72,14 @@ androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navig
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+
 androidx-work = {group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork"}
 
 hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "hilt"}
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt"}
 hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
+hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
 
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
 

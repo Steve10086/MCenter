@@ -10,6 +10,8 @@ import com.astune.data.respository.DeviceDataRepository
 import com.astune.data.utils.getTimeBetween
 import com.astune.database.Device
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
@@ -21,6 +23,7 @@ class DeviceViewModel @Inject constructor(
     private val syncManager: SyncManager
 ): ViewModel() {
     private var devices by mutableStateOf(emptyList<Device>())
+    val refresh = MutableStateFlow(false)
 
     fun getDeviceList(): List<Device> {
         viewModelScope.launch{
@@ -29,13 +32,14 @@ class DeviceViewModel @Inject constructor(
         return devices
     }
 
-    fun getDelay(ip:List<String>){
+    fun getDelay():StateFlow<Boolean>{
         viewModelScope.launch {
-            syncManager.pingSync(ip).collect(){
+            refresh.value = true
+            syncManager.pingSync(devices.getIp()).collect(){
                 for(device in devices){
                     val delay = it[device.ip]?.toInt()
                     if ((delay ?: -1) > -1){
-                        device.delay = "${delay} ms"
+                        device.delay = "$delay ms"
                         device.lastOnline = Instant.now().toString()
                     }else if (device.lastOnline == null) {
                         device.delay = "offline"
@@ -45,8 +49,14 @@ class DeviceViewModel @Inject constructor(
                         )
                     }
                 }
+                refresh.value = false
             }
         }
+        return refresh
+    }
+
+    fun stopPing(){
+        syncManager.stopPing()
     }
 
     /*fun getDelay() {
@@ -84,7 +94,6 @@ class DeviceViewModel @Inject constructor(
             deviceDataRepository.deleteDevice(device)
             deviceDataRepository.getDeviceList().collect{ value -> devices = value}
         }
-        getDelay(devices.getIp())
     }
 
     fun insert(device: Device){
@@ -94,8 +103,12 @@ class DeviceViewModel @Inject constructor(
         }
     }
 
-    internal fun List<Device>.getIp():List<String>{
-        //TODO
-        return emptyList()
+}
+
+internal fun List<Device>.getIp():List<String>{
+    return mutableListOf<String>().apply {
+        for(device in this@getIp){
+            this.add(device.ip)
+        }
     }
 }

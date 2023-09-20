@@ -17,12 +17,15 @@ class SyncManager @Inject constructor(@ApplicationContext private val ctx : Cont
     private val mutableStateFlow = MutableStateFlow<Map<String, Double>>(emptyMap())
 
     private val workObserver:Observer<List<WorkInfo>> = Observer{results ->
-        mutableStateFlow.value =
-            results[0].outputData.keyValueMap as Map<String, Double>}
+        results.size.takeIf { it > 0 }?.let {
+            mutableStateFlow.value =
+                results[0].outputData.keyValueMap as Map<String, Double>
+        }
+    }
 
     fun pingSync(ip: List<String>): StateFlow<Map<String, Double>> {
 
-        val syncWork = PeriodicWorkRequestBuilder<PingSynchronizer>(15, TimeUnit.MINUTES).setInputData(workDataOf("ip" to ip))
+        val syncWork = PeriodicWorkRequestBuilder<PingSynchronizer>(15, TimeUnit.MINUTES).setInputData(workDataOf("ip" to ip.toTypedArray()))
             .build()
 
         val result:StateFlow<Map<String, Double>> = mutableStateFlow

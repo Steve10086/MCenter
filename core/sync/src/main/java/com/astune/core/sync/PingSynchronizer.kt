@@ -14,11 +14,10 @@ class PingSynchronizer @AssistedInject constructor(
     @Assisted ctx:Context,
     @Assisted params: WorkerParameters,
     private val networkRepository: NetWorkRepository,
-) : CoroutineWorker(
-    ctx,
-    params,) {
+) : CoroutineWorker(ctx, params) {
+
     override suspend fun doWork(): Result {
-        val ipList = inputData.keyValueMap["ip"] as List<String>
+        val ipList = inputData.keyValueMap["ip"] as Array<String>
         val results = mutableMapOf<String, Double>()
         for (ip in ipList){
             networkRepository.getAveragePing(ip, 5).collect(){
@@ -31,6 +30,7 @@ class PingSynchronizer @AssistedInject constructor(
                 }
             }
         }
+
         val resultData = workDataOf(*results.toMap().toList().map { it }.toTypedArray())
         return Result.success(resultData)
     }
