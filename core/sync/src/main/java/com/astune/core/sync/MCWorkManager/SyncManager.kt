@@ -22,19 +22,19 @@ class SyncManager @Inject constructor(@ApplicationContext private val ctx : Cont
             .build()
 
         workManager.enqueueUniquePeriodicWork(
-            PingSync,
+            PingSyncName,
             ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             syncWork
         )
-        return workManager.getWorkInfosForUniqueWorkFlow(PingSync).map {
+        return workManager.getWorkInfosForUniqueWorkFlow(PingSyncName).map {
             return@map it[0]
         }
 
     }
 
     fun stopPing(){
-        workManager.cancelUniqueWork(PingSync)
+        workManager.cancelUniqueWork(PingSyncName)
     }
 }
 
-internal const val PingSync = "PingSync"
+internal const val PingSyncName = "PingSync"

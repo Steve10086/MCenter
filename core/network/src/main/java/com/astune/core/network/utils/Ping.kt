@@ -5,7 +5,7 @@ import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-suspend fun averagePing(url: String, timeout: Int): Double {
+internal suspend fun averagePing(url: String, timeout: Int): Double {
     return ping(url, time = 4, timeout = timeout)
         .also {
             Log.i("Ping", it.toString())
@@ -20,7 +20,7 @@ suspend fun averagePing(url: String, timeout: Int): Double {
 
 }
 
-suspend fun ping(url: String, timeout: Int, time: Int): List<String> {
+internal suspend fun ping(url: String, timeout: Int, time: Int): List<String> {
     val output = mutableListOf<String>()
     try {
         val process = Runtime.getRuntime().exec("ping -c $time -w $timeout $url")

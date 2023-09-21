@@ -1,10 +1,8 @@
 package com.astune.database
 
-import android.os.Bundle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.os.bundleOf
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -27,19 +25,13 @@ data class Device(
     @get:Ignore
     var delay by mutableStateOf("")
 
+    @get:Ignore
+    var loading by mutableStateOf(false)
+
     override fun toString(): String {
         return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline], deLay: $delay")
     }
 
-    fun toBundle(): Bundle {
-        return bundleOf(
-            Pair("id", id),
-            Pair("name", name),
-            Pair("ip", ip),
-            Pair("lasOnline", lastOnline),
-            Pair("isOnline", delay)
-        )
-    }
 }
 
 @Entity

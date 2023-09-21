@@ -18,7 +18,7 @@ fun TitleBar(
     leftBtn: @Composable (Modifier) -> Unit = {},
     rightBtn: @Composable (Modifier) -> Unit = {},
 ){
-    Surface (modifier = modifier.height(45.dp).fillMaxWidth(),
+    Surface (modifier = modifier.height(60.dp).fillMaxWidth(),
         color = MaterialTheme.colorScheme.inverseOnSurface,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
@@ -29,14 +29,15 @@ fun TitleBar(
                 fontSize = 24.sp,
                 fontStyle = FontStyle.Italic,
                 modifier = modifier.constrainAs(titleT){
-                    centerTo(parent)
+                    centerHorizontallyTo(parent)
+                    bottom.linkTo(parent.bottom, 0.dp)
                 })
 
             leftBtn(modifier.height(35.dp)
                 .width(35.dp)
                 .padding(0.dp)
                 .constrainAs(left){
-                    top.linkTo(parent.top, 5.dp)
+                    bottom.linkTo(parent.bottom, 0.dp)
                     start.linkTo(parent.start, 5.dp)
                 },)
 
@@ -44,7 +45,7 @@ fun TitleBar(
                 .width(35.dp)
                 .padding(0.dp)
                 .constrainAs(right){
-                    top.linkTo(parent.top, 5.dp)
+                    bottom.linkTo(parent.bottom, 0.dp)
                     end.linkTo(parent.end, 5.dp)
                 })
 
@@ -92,7 +93,7 @@ fun ButtonTitlebar(
 
 @ThemePreview
 @Composable
-fun titleBarPreview(){
+fun TitleBarPreview(){
     MCenterTheme {
         ButtonTitlebar()
     }

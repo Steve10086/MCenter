@@ -8,6 +8,7 @@ import androidx.work.workDataOf
 import com.astune.core.network.repository.NetWorkRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.delay
 
 @HiltWorker
 class PingSynchronizer @AssistedInject constructor(
@@ -17,22 +18,25 @@ class PingSynchronizer @AssistedInject constructor(
 ) : CoroutineWorker(ctx, params) {
 
     override suspend fun doWork(): Result {
-        val ipList = inputData.keyValueMap["ip"] as Array<String>
+        val ipList = inputData.getStringArray("ip")?: emptyArray()
         val results = mutableMapOf<String, Double>()
         for (ip in ipList){
-            networkRepository.getAveragePing(ip, 5).collect(){
+            networkRepository.getAveragePing(ip, 5).collect {
                 if (it == (-1).toDouble()){
-                    networkRepository.getAveragePing(ip, 10).collect(){delay ->
+                    networkRepository.getAveragePing(ip, 10).collect { delay ->
                         results[ip] = delay
                     }
                 }else{
                     results[ip] = it
                 }
+                val resultData = workDataOf(*results.toList().toTypedArray())
+                setProgress(resultData)
             }
         }
 
-        val resultData = workDataOf(*results.toMap().toList().map { it }.toTypedArray())
-        return Result.success(resultData)
+        delay(1000)
+
+        return Result.success()
     }
 
 }

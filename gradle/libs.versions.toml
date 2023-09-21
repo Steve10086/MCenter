@@ -8,7 +8,7 @@ androidxComposeConstraintlayout = "1.0.1"
 
 androidxDataStore = "1.0.0"
 
-androidxMaterial3 = "1.0.1"
+androidxMaterial3 = "1.1.1"
 
 androidxHiltNavigationCompose = "1.0.0"
 

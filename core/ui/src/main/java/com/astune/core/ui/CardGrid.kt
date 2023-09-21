@@ -115,7 +115,7 @@ fun LinkCardPerview(){
 
 @Preview
 @Composable
-fun CardListPerview(){
+fun CardGridPerview(){
     val testLink: MutableList<Link> = ArrayList()
     for (i in 0..20) {
         testLink.add(WebLink(i, "test$i", 0, "123.456.789"))
@@ -142,4 +142,3 @@ fun LinkCardGrid(modifier: Modifier = Modifier,
         }
     }
 }
-enum class SubCardInfill{ICON, DEFAULT}
