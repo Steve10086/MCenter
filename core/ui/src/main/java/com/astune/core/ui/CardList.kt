@@ -1,4 +1,4 @@
-package com.astune.ui
+package com.astune.core.ui
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -60,7 +60,7 @@ fun DeviceCard (device: Device,
                 Text(
                     text = device.name,
                     Modifier.width(201.dp)
-                        .padding(0.dp, 0.dp, 20.dp, 20.dp)
+                        .padding(0.dp, 0.dp, 20.dp, 0.dp)
                         .constrainAs(name) {
                             top.linkTo(parent.top, 5.dp)
                             start.linkTo(parent.start, 0.dp)
@@ -73,16 +73,27 @@ fun DeviceCard (device: Device,
                 )
 
                 Text(device.ip, Modifier.constrainAs(ip) {
-                    bottom.linkTo(lastOnline.top, 5.dp)
+                    top.linkTo(name.bottom, 2.dp)
                     start.linkTo(parent.start, 15.dp)
                 })
+                if (device.loading){
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp).constrainAs(lastOnline){
+                            bottom.linkTo(parent.bottom, 10.dp)
+                            start.linkTo(parent.start, 15.dp)
+                        }
+                    )
+                }else{
+                    Text(
+                        if(device.delay == "") "offline" else device.delay,
+                        Modifier.constrainAs(lastOnline) {
+                            bottom.linkTo(parent.bottom, 10.dp)
+                            start.linkTo(parent.start, 15.dp)
+                        })
+                }
 
-                Text(
-                    if (device.lastOnline != null) device.lastOnline.orEmpty() else "online",
-                    Modifier.constrainAs(lastOnline) {
-                        bottom.linkTo(parent.bottom, 10.dp)
-                        start.linkTo(parent.start, 15.dp)
-                    })
 
                 Button(onClick = { onButtonClick(device) }, Modifier
                     .constrainAs(infoBtn) {
@@ -107,6 +118,7 @@ fun DeviceCard (device: Device,
 @Composable
 fun CardPerview(){
     val device = Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", null)
+    device.loading = true
     DeviceCard(
         device = device,
         modifier = Modifier.padding(8.dp)
@@ -118,7 +130,12 @@ fun CardPerview(){
 fun CardListPerview(){
     val list = ArrayList<Device>()
     for(id in 0..20){
-        list.add(Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", null))
+        list.add(Device(0, "testDeviceNameeeeeeeeeeeeeeeeeeeee", "192.168.1.test", "0"))
+        id.takeIf {
+            it % 2 == 0
+        }?.let {
+            list[id].loading = true
+        }
     }
     DeviceCardList(
         modifier = Modifier.padding(8.dp),
@@ -131,9 +148,13 @@ fun DeviceCardList(
     modifier: Modifier,
     cardList: List<Device>,
     onLongClick: (Offset, Device) -> Unit = { _, _ ->},
-    onButtonClick: (Device) -> Unit = {}
+    onButtonClick: (Device) -> Unit = {},
 ){
-    LazyColumn(modifier = modifier.padding(all = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    LazyColumn(
+        modifier = modifier
+            .padding(all = 5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         items(cardList) { card ->
             DeviceCard(card, modifier = Modifier.padding(10.dp), onButtonClick = onButtonClick, onLongClick = onLongClick)
         }

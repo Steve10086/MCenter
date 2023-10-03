@@ -1,7 +1,5 @@
 package com.astune.device
 
-import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -18,13 +16,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.astune.core.ui.DeviceCardList
 import com.astune.core.ui.LocalRootUIState
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.TextCompat
 import com.astune.core.ui.design.ThemePreview
 import com.astune.core.ui.setOnRightBtnClicked
 import com.astune.database.Device
-import com.astune.ui.DeviceCardList
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DevicePanel(
@@ -32,35 +32,41 @@ fun DevicePanel(
     deviceViewModel: DeviceViewModel = hiltViewModel(),
     onNavigateToLink: (String) -> Unit,
 ){
-    val deviceList = deviceViewModel.getDeviceList()
+    DisposableEffect(Unit) {
+        onDispose {
+            deviceViewModel.stopPing()
+        }
+    }
 
     DeviceScreen(
         modifier = modifier,
-        deviceList = deviceList,
-        onDeviceCardBtnClicked = {device ->  onNavigateToLink(device.id.toString())},
-        deleteDevice = {device ->  deviceViewModel.delete(device) },
-        insertDevice = {device ->  deviceViewModel.insert(device) },
-        editDevice = {device ->  deviceViewModel.insert(device) }
+        deviceList = deviceViewModel.devices,
+        onDeviceCardBtnClicked = { device ->  onNavigateToLink(device.id.toString())},
+        deleteDevice = { device ->  deviceViewModel.delete(device) },
+        insertDevice = { device ->  deviceViewModel.insert(device) },
+        editDevice = { device ->  deviceViewModel.insert(device) },
+        onRefresh = { deviceViewModel.getDelay() }
     )
 
 }
 
 
 
-@SuppressLint("UnrememberedMutableState")
 @Composable
 internal fun DeviceScreen(
     modifier: Modifier,
     deviceList: List<Device>,
     onDeviceCardBtnClicked: (Device) -> Unit = {},
+    onRefresh: () -> Unit = {},
     deleteDevice: (Device) -> Unit = {},
     editDevice: (Device) -> Unit = {},
     insertDevice: (Device) -> Unit = {},
     ) {
-    var expended by remember { mutableStateOf(false) }
+
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showInsertDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+
     var position by remember { mutableStateOf(Offset.Zero) }
     var currentDevice by remember { mutableStateOf(Device(-1, "", "", null)) }
 
@@ -69,13 +75,18 @@ internal fun DeviceScreen(
     }
 
 
+
     Box(modifier = modifier, contentAlignment = Alignment.TopCenter) {
+
+        var expended by remember { mutableStateOf(false) }
 
         Box(
             modifier = Modifier.onGloballyPositioned {
                 position -= it.positionInParent()
             }
-        ){DropdownMenu(
+        ){
+
+            DropdownMenu(
             expanded = expended,
             onDismissRequest = { expended = false },
             offset = with(LocalDensity.current) { DpOffset(position.x.toDp(), position.y.toDp()) }
@@ -99,18 +110,26 @@ internal fun DeviceScreen(
             )
         }}
 
+        val swipeRefreshState = rememberSwipeRefreshState(false)
 
-        DeviceCardList(
-            modifier = Modifier,
-            cardList = deviceList,
-            onButtonClick = onDeviceCardBtnClicked,
-            onLongClick = { offset, device ->
-                position = offset
-                expended = true
-                currentDevice = device
-                Log.i("devicepanel", "long click $offset")
-            }
-        )
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxHeight()
+        ){
+            DeviceCardList(
+                modifier = Modifier,
+                cardList = deviceList,
+                onButtonClick = onDeviceCardBtnClicked,
+                onLongClick = { offset, device ->
+                    position = offset
+                    expended = true
+                    currentDevice = device
+                    //Log.i("devicepanel", "long click $offset")
+                },
+            )
+        }
+
     }
 
     if (showDeleteDialog) {
@@ -214,8 +233,8 @@ fun DeviceSetting(
             }
         }
     }
-
 }
+
 
 @ThemePreview
 @Composable

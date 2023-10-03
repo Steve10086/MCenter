@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import com.astune.data.utils.FileUtil
 import com.astune.datastore.UserDataSource
 import com.astune.model.Environment
@@ -26,9 +25,10 @@ class UserDataRepository @Inject constructor(
     fun getAvatar():Bitmap{
         return try {
             BitmapFactory.decodeFile(context.filesDir.toString() + Environment.AVATAR_PATH)
-        }catch (e:NullPointerException){
+        }catch (_:Exception){
             try {
-                BitmapFactory.decodeStream(context.assets.open("avatar.jpg"))
+                setAvatar(BitmapFactory.decodeStream(context.assets.open("avatar.png")))
+                getAvatar()
             }catch (e:FileNotFoundException){
                 throw e // todo: handle
             }
@@ -50,32 +50,35 @@ class UserDataRepository @Inject constructor(
         userDataSource.setTheme(theme)
     }
 
-    fun setAvatar(uri:Uri):Bitmap?{
-        var newAvatar:Bitmap? = null
+    fun setAvatar(uri:Uri) : Bitmap{
+        val avatarInputStream = context.contentResolver.openInputStream(uri)
+        return setAvatar(BitmapFactory.decodeStream(avatarInputStream))
+    }
+
+
+    fun setAvatar(avatar:Bitmap) : Bitmap {
         if (File(context.filesDir.toString() + Environment.AVATAR_PATH).isFile
             || File(context.filesDir.toString() + "/img").mkdirs()
         ) {
-            val avatarInputStream = context.contentResolver.openInputStream(uri)
             val avatarOutputStream =
                 Files.newOutputStream(Paths.get(context.filesDir.toString() + Environment.AVATAR_PATH))
-            newAvatar = BitmapFactory.decodeStream(avatarInputStream)
-            val newSize = if(newAvatar.width > newAvatar.height) newAvatar.height else newAvatar.width
-            newAvatar = Bitmap.createBitmap(
-                newAvatar,
-                (newAvatar.width - newSize) / 2,
-                (newAvatar.height - newSize) / 2,
+            val newSize = if(avatar.width > avatar.height) avatar.height else avatar.width
+            val newAvatar = Bitmap.createBitmap(
+                avatar,
+                (avatar.width - newSize) / 2,
+                (avatar.height - newSize) / 2,
                 newSize,
                 newSize,
-                )
+            )
 
             newAvatar.compress(Bitmap.CompressFormat.JPEG, 100, avatarOutputStream)
-            avatarInputStream!!.close()
             avatarOutputStream.close()
+
+            return newAvatar
         } else {
             FileUtil.delete(context.filesDir.toString() + "/img")
+            return setAvatar(avatar)
         }
-        Log.i("UDR", newAvatar.toString())
-        return newAvatar
     }
 
 

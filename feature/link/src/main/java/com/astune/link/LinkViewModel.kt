@@ -19,7 +19,7 @@ class LinkViewModel @Inject constructor(
     private val deviceDataRepository: DeviceDataRepository
 ) : ViewModel(){
     private var linkList by mutableStateOf(emptyList<Link>())
-    private var device by mutableStateOf(Device(0, "0", "0", null))
+    private var device by mutableStateOf(Device(0, "0", "0", "0"))
 
     fun getParentDevice(id:Int):Device{
         viewModelScope.launch {

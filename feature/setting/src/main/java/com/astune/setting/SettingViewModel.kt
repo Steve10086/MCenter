@@ -22,7 +22,7 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun updateAvatar(uri: Uri):Bitmap?{
+    fun updateAvatar(uri: Uri):Bitmap{
         return userDataRepository.setAvatar(uri)
     }
     fun updateUserInfo(userInfo: UserInfo){
