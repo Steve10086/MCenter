@@ -1,5 +1,6 @@
 package com.astune.device
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,6 +26,7 @@ class DeviceViewModel @Inject constructor(
     private var refresh by mutableStateOf(false)
 
     init{
+        Log.i("deviceVM", "instanced!")
         getDeviceList()
     }
 
@@ -39,7 +41,7 @@ class DeviceViewModel @Inject constructor(
 
     fun getDelay(){
         if(!refresh && devices.isNotEmpty()){
-            devices.setLoading()
+            devices.setLoading(true)
             viewModelScope.launch {
                 refresh = true
                // Log.i("DeviceVM", "refreshing")
@@ -72,6 +74,7 @@ class DeviceViewModel @Inject constructor(
     }
 
     fun stopPing(){
+        devices.setLoading(false)
         syncManager.stopPing()
     }
 
@@ -100,8 +103,8 @@ internal fun List<Device>.getIp():List<String>{
     }
 }
 
-internal fun List<Device>.setLoading(){
+internal fun List<Device>.setLoading(state:Boolean){
     for(device in this@setLoading){
-        device.loading = true
+        device.loading = state
     }
 }

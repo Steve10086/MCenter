@@ -126,14 +126,19 @@ fun SettingScreen(
                             userInfo.email = it
                             email = it
                         },
-                        colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent))
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                        )
+                    )
                 }
                 Row(modifier = Modifier.constrainAs(themeSwitch){
                     top.linkTo(avatarImg.bottom, 10.dp)
                     start.linkTo(parent.start, 15.dp) },
                     verticalAlignment = Alignment.CenterVertically,
                 ){
-                    Text("Theme: $theme ", style = MaterialTheme.typography.titleMedium)
+                    Text("Theme: ${theme.takeIf { it == "" }?:"light"} ", style = MaterialTheme.typography.titleMedium)
                     Switch(
                         checked = theme == "dark",
                         onCheckedChange = {
@@ -152,7 +157,8 @@ fun SettingScreen(
                 }
                 Row(modifier = Modifier.constrainAs(zerotierSwitch){
                     top.linkTo(themeSwitch.bottom, 10.dp)
-                    start.linkTo(parent.start, 15.dp) },
+                    start.linkTo(parent.start, 15.dp) }
+                    .alpha(0f),
                     verticalAlignment = Alignment.CenterVertically,
                 ){
                     Text("enable Zerotier ", style = MaterialTheme.typography.titleMedium)

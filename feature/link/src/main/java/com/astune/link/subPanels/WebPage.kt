@@ -18,7 +18,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.ThemePreview
-import com.google.accompanist.web.*
+import com.google.accompanist.web.AccompanistWebChromeClient
+import com.google.accompanist.web.WebView
+import com.google.accompanist.web.rememberWebViewNavigator
+import com.google.accompanist.web.rememberWebViewState
 
 @Composable
 fun WebLinkPage(
@@ -61,41 +64,47 @@ fun WebViewScreen(
                 }
             }
 
-            Surface(modifier = Modifier.height(45.dp).fillMaxWidth(),
+            Surface(modifier = Modifier.height(60.dp).fillMaxWidth(),
                 color = MaterialTheme.colorScheme.inverseOnSurface) {
-                Row (modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                Column {
+                    Spacer(
+                        modifier = Modifier.height(15.dp)
+                    )
+                    Row (modifier = Modifier.fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
                     ){
-                    IconButton(
-                        onClick = onExit
-                    ){
-                        Icon(imageVector = Icons.Default.ArrowBack, "Exit")
-                    }
-                    Box(modifier = Modifier
-                        .fillMaxWidth(0.85f)
-                        .height(35.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant),
-                        contentAlignment = Alignment.CenterStart){
-                        Text(titleText,
-                            modifier = Modifier.padding(start = 10.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            overflow = TextOverflow.Ellipsis)
-                    }
-
-                    IconButton(
-                        onClick = {
-                            if (progress == 1f){
-                                navigator.reload()
-                            }else{
-                                navigator.stopLoading()
-                                progress = 1f
-                            }
+                        IconButton(
+                            onClick = onExit
+                        ){
+                            Icon(imageVector = Icons.Default.ArrowBack, "Exit")
                         }
-                    ){
-                        Icon(if(progress < 1f) Icons.Default.Close else Icons.Default.Refresh, "")
+                        Box(modifier = Modifier
+                            .fillMaxWidth(0.85f)
+                            .height(35.dp)
+                            .background(MaterialTheme.colorScheme.outlineVariant),
+                            contentAlignment = Alignment.CenterStart){
+                            Text(titleText,
+                                modifier = Modifier.padding(start = 10.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                overflow = TextOverflow.Ellipsis)
+                        }
+
+                        IconButton(
+                            onClick = {
+                                if (progress == 1f){
+                                    navigator.reload()
+                                }else{
+                                    navigator.stopLoading()
+                                    progress = 1f
+                                }
+                            }
+                        ){
+                            Icon(if(progress < 1f) Icons.Default.Close else Icons.Default.Refresh, "")
+                        }
                     }
                 }
+
             }
 
             AnimatedVisibility(visible = (progress > 0f && progress < 1f)){
