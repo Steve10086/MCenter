@@ -1,6 +1,5 @@
 package com.astune.mcenter.ui
 
-import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -10,8 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,9 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import com.astune.core.ui.*
-import com.astune.core.ui.design.MCenterTheme
 import com.astune.mcenter.R
 import com.astune.mcenter.navigation.McNavHost
 import com.astune.mcenter.navigation.TopLevelRoute
@@ -69,7 +66,6 @@ internal fun McBackground(
     onCaptureUserInfo: () -> UserInfo,
     content: @Composable () -> Unit = {},
 ){
-
 
     var screenSize by remember { mutableStateOf(Size.Zero) }
 
@@ -255,15 +251,5 @@ fun SideBarPreview(){
                 email = "test@gmail.com"
             )
         )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark theme")
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO, name = "Light theme")
-@Composable
-fun BackgroundPreview(){
-    MCenterTheme {
-        McBackground(onCaptureUserInfo = { UserInfo() }, mcAppState = MCAppState(rememberNavController())){
-        }
     }
 }

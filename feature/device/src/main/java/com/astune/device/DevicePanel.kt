@@ -1,5 +1,6 @@
 package com.astune.device
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -32,20 +33,20 @@ fun DevicePanel(
     deviceViewModel: DeviceViewModel = hiltViewModel(),
     onNavigateToLink: (String) -> Unit,
 ){
-    DisposableEffect(Unit) {
-        onDispose {
-            deviceViewModel.stopPing()
-        }
-    }
+    val devices = deviceViewModel.deviceFlow.collectAsState().value
 
     DeviceScreen(
         modifier = modifier,
-        deviceList = deviceViewModel.devices,
+        deviceList = devices,
         onDeviceCardBtnClicked = { device ->  onNavigateToLink(device.id.toString())},
         deleteDevice = { device ->  deviceViewModel.delete(device) },
         insertDevice = { device ->  deviceViewModel.insert(device) },
         editDevice = { device ->  deviceViewModel.insert(device) },
-        onRefresh = { deviceViewModel.getDelay() }
+        onRefresh = {
+            deviceViewModel.ping(devices.getIp())
+            deviceViewModel.getDelay(devices = devices)
+            Log.i("Device", "refreshed")
+        }
     )
 
 }
@@ -62,7 +63,6 @@ internal fun DeviceScreen(
     editDevice: (Device) -> Unit = {},
     insertDevice: (Device) -> Unit = {},
     ) {
-
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showInsertDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -74,10 +74,7 @@ internal fun DeviceScreen(
         showInsertDialog = true
     }
 
-
-
     Box(modifier = modifier, contentAlignment = Alignment.TopCenter) {
-
         var expended by remember { mutableStateOf(false) }
 
         Box(

@@ -7,11 +7,9 @@ import androidx.compose.animation.slideIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.astune.device.DevicePanel
-import com.astune.device.DeviceViewModel
 import com.astune.link.navigation.linkGraph
 import com.astune.mcenter.ui.MCAppState
 import com.astune.setting.SettingPanel
@@ -22,7 +20,6 @@ fun McNavHost(
     modifier: Modifier = Modifier
 ){
     val navHostController = mcAppState.navHostController
-    val deviceViewModel:DeviceViewModel = hiltViewModel()
 
     NavHost(modifier = modifier, navController = navHostController, startDestination = "device"){
 
@@ -46,8 +43,9 @@ fun McNavHost(
             }
         ) {
             DevicePanel(
-                deviceViewModel = deviceViewModel,
-                onNavigateToLink = { navHostController.navigate("linkPanel/$it")}) }
+                onNavigateToLink = { navHostController.navigate("linkPanel/$it")},
+            )
+        }
 
 
         linkGraph(navHostController)

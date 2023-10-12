@@ -18,10 +18,11 @@ data class Device(
 
     @ColumnInfo (name = "ip") var ip: String,
 
-    @ColumnInfo (name = "last_online") var lastOnline: String?
+    @ColumnInfo (name = "last_online") var lastOnline: String? = null,
 
+    @ColumnInfo (name = "last_delay") var latestDelay: String? = null,
 
-) {
+    ) {
     @get:Ignore
     var delay by mutableStateOf("")
 
@@ -29,7 +30,7 @@ data class Device(
     var loading by mutableStateOf(false)
 
     override fun toString(): String {
-        return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline], deLay: $delay")
+        return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline, latestDelay: $latestDelay], deLay: $delay")
     }
 
 }

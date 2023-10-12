@@ -12,6 +12,12 @@ interface DeviceDao {
     @Query("Select * from device where id = :id")
     fun getDevice(id:Int):Device
 
+    @Query("Select * from device where ip = :ip")
+    fun getDevice(ip:String):Device
+
+    @Query("Select last_delay from device where id = :id")
+    fun getDeviceDelay(id:Int):String
+
     @Query("Select * from device")
     fun getAll():List<Device>
 
