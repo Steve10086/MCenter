@@ -8,6 +8,9 @@ android {
     namespace 'com.astune.mcenter'
     compileSdk 34
 
+    packagingOptions {
+        pickFirst 'META-INF/DEPENDENCIES'
+    }
 
     defaultConfig {
         applicationId "com.astune.mcenter"

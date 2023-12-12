@@ -89,8 +89,8 @@ fun LinkSetting(
                     } else {
                         onComplete.invoke(
                             when(type){
-                                WEB_LINK.getName() -> WebLink(0, name, parentId, info.getOrDefault("address", ""))
-                                SSH_LINK.getName() -> SSHLink(0, name, parentId, info.getOrDefault("port", ""))
+                                WEB_LINK.getName() -> WebLink(link.id, name, parentId, info.getOrDefault("address", ""))
+                                SSH_LINK.getName() -> SSHLink(link.id, name, parentId, info.getOrDefault("port", ""))
                                 else -> throw IllegalArgumentException("illegal link type!")
                             })
                     }

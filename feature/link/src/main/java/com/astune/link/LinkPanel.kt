@@ -1,6 +1,7 @@
 package com.astune.link
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
@@ -37,6 +38,7 @@ fun LinkPanel(
     onNavigationToSubApplication: (String) -> Unit,
 ){
     val linkList = linkViewModel.getLinkList(parentId) + NewLink("", parentId)
+    Log.d("LinkPanel", linkList.map{it.id}.toString())
 
     LinkScreen(
         linkList = linkList,
@@ -186,6 +188,6 @@ internal fun PanelPreview(){
         linkList.add(WebLink(0, "$i", 0, "test info"))
     }
     MCenterTheme {
-        LinkScreen(linkList = linkList, Device(0, "0", "0", "0"))
+        LinkScreen(linkList = linkList, Device(2, "0", "0", "0"))
     }
 }

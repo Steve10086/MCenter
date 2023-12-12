@@ -28,4 +28,4 @@ include("core:sync")
 include (":feature:device")
 include("feature:setting")
 include("feature:link")
-
+include("feature:sshclient")

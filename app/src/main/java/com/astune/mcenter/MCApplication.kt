@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -13,6 +14,7 @@ class MCApplication : Application(), Configuration.Provider {
     lateinit var workerFactory: HiltWorkerFactory
 
     override fun onCreate() {
+
         super.onCreate()
     }
 

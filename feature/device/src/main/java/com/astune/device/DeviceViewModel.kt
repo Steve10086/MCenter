@@ -1,9 +1,6 @@
 package com.astune.device
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
@@ -25,15 +22,15 @@ class DeviceViewModel @Inject constructor(
     private val syncManager: SyncManager
 ): ViewModel() {
     var deviceFlow = MutableStateFlow(emptyList<Device>())
-    private var refreshing by mutableStateOf(false)
+    private var refreshing = false
+    private val pingDisPatchers = Dispatchers.IO
 
     init{
-        Log.i("deviceVM", "instanced!")
         getDeviceList()
     }
 
     private fun getDeviceList(){
-        viewModelScope.launch(Dispatchers.Main){
+        viewModelScope.launch(pingDisPatchers){
             deviceDataRepository.getDeviceList().collect{ value ->
                 deviceFlow.value = value
                 getDelay()
@@ -41,11 +38,15 @@ class DeviceViewModel @Inject constructor(
         }
     }
 
-    fun ping(ips:List<String>)=syncManager.pingSync(ips)
+
+    fun ping(ips:List<String>){
+        Log.i("DeviceVM", ips.toString())
+        syncManager.pingSync(ips)
+    }
 
     fun getDelay(devices: List<Device> = deviceFlow.value){
         if(!refreshing && devices.isNotEmpty()){
-            viewModelScope.launch(Dispatchers.Main) {
+            viewModelScope.launch(pingDisPatchers) {
                 refreshing = true
                 syncManager.getLastPing().collect(){
                     //Log.i("DeviceVM", "getting Delay!")
@@ -79,7 +80,6 @@ class DeviceViewModel @Inject constructor(
                                 device.lastOnline = Instant.now().toString()
                             }
                         }
-
                         device.loading = false
                     }
                     refreshing = false
@@ -94,7 +94,7 @@ class DeviceViewModel @Inject constructor(
     }
 
     fun delete(device: Device){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             deviceDataRepository.deleteDevice(device)
             getDeviceList()
         }
@@ -104,7 +104,6 @@ class DeviceViewModel @Inject constructor(
         viewModelScope.launch {
             deviceDataRepository.insertDevice(device)
             getDeviceList()
-            ping(deviceFlow.value.getIp())
         }
     }
 }
