@@ -15,8 +15,7 @@ class WebPageTest {
                 uri = "https://www.baidu.com",
                 onExit = {}
             )
-            Thread.sleep(10000)
         }
-
+        Thread.sleep(10000)
     }
 }

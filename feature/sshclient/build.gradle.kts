@@ -11,4 +11,5 @@ android{
 dependencies {
     implementation(project(":core:network"))
     implementation(libs.google.accompanist.webview)
+    implementation(libs.hierynomus.sshj)
 }

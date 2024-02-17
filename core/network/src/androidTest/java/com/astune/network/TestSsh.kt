@@ -9,7 +9,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
-import kotlin.test.assertEquals
+
 
 @HiltAndroidTest
 class TestSsh {
@@ -27,14 +27,15 @@ class TestSsh {
 
     @Test
     fun testConnection() = runTest {
-        assertEquals(2, 2)
-        val connection = sshRepository.connect("192.168.1.1", 2223, "root", "1234")
+        //sshRepository.executeShellCommand("192.168.1.116", "user", "1", "ping 192.168.1.1")
+        val connection = sshRepository.connect("192.168.1.116", 22, "user", "1")
+        Log.d("Test", "Connected!")
+        sshRepository.send("ping 192.168.1.1\n".toByteArray(), connection.shell)
+
         sshRepository.receive(connection.shell).collect(){
-            Log.d("Test", it.toString())
+            Log.d("Test", it)
+            //sshRepository.disconnect(connection)
         }
-        sshRepository.send("ping -c 1 google.com\n".toByteArray(), connection.shell)
-        sshRepository.receive(connection.shell).collect(){
-            Log.d("Test", it.toString())
-        }
+
     }
 }
