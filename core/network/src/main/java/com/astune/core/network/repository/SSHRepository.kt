@@ -1,6 +1,7 @@
 package com.astune.core.network.repository
 
 import android.util.Log
+import android.util.Size
 import com.astune.core.network.`object`.SshConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -20,26 +21,36 @@ import kotlin.concurrent.thread
 class SSHRepository @Inject constructor(
     private val client: SSHClient
 ) {
-    suspend fun connect(host:String, port:Int, username:String, password:String): SshConnection {
-        client.addHostKeyVerifier(PromiscuousVerifier())
-        client.connect(host, port)
-        client.authPassword(username, password)
-        val session = client.startSession()
-        session.allocateDefaultPTY()
-        return SshConnection(session.startShell(), session)
+    suspend fun connect(host:String, port:Int, username:String, password:String): SshConnection? {
+        try{
+            client.addHostKeyVerifier(PromiscuousVerifier())
+            client.connect(host, port)
+            client.authPassword(username, password)
+            val session = client.startSession()
+            session.allocateDefaultPTY()
+            return SshConnection(session.startShell(), session)
+        }catch (e:Exception){
+            client.close()
+        }
+        return null
     }
 
-    suspend fun send(message:ByteArray, shell:Shell){
-        withContext(Dispatchers.IO) {
-            shell.outputStream.write(message)
-            shell.outputStream.flush()
+    suspend fun send(message:Byte, shell:Shell): Boolean{
+        if (shell.isOpen){
+            return withContext(Dispatchers.IO) {
+                shell.outputStream.write(message.toInt())
+                shell.outputStream.flush()
+                return@withContext true
+            }
+        } else {
+            return false
         }
     }
 
     suspend fun receive(shell:Shell): Flow<String> {
         val content = BufferedReader(InputStreamReader(shell.inputStream))
 
-        val buffer = CharArray(1024) // 创建一个字符数组
+        val buffer = CharArray(1024)
         return flow {
             var len = content.read(buffer)
             while (len != -1) {
@@ -49,10 +60,14 @@ class SSHRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun disconnect(sshConnection:SshConnection) {
+    fun disconnect(sshConnection:SshConnection) {
         sshConnection.shell.close()
         sshConnection.session.close()
         client.close()
+    }
+
+    fun changeWindowsSize(sshConnection:SshConnection, size: Size){
+        sshConnection.shell.changeWindowDimensions(size.width, size.height, 1080, 2010)
     }
 
     fun executeShellCommand(host: String, username: String, password: String, command: String) {

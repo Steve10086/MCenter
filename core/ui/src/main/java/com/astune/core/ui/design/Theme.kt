@@ -5,6 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.astune.core.ui.design.ssh.MCSshTheme
+import com.astune.core.ui.design.ssh.blackSshColorScheme
+import com.astune.core.ui.design.ssh.violentSshColorScheme
 
 
 private val LightColors = lightColorScheme(
@@ -87,4 +90,26 @@ fun MCenterTheme(
     colorScheme = colors,
     content = content
   )
+}
+
+@Composable
+fun MCenterSshTheme(
+    theme: SshThemes,
+    content:@Composable () -> Unit
+) {
+    val color = when(theme){
+        SshThemes.black -> blackSshColorScheme()
+        SshThemes.violent -> violentSshColorScheme()
+    }
+
+    MCSshTheme(
+        color = color,
+        content = content
+    )
+
+}
+
+enum class SshThemes(){
+    black,
+    violent
 }

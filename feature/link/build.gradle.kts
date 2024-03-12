@@ -10,5 +10,7 @@ android{
 
 dependencies {
     implementation(project(":core:database"))
+
+    implementation(project(":feature:sshclient"))
     implementation(libs.google.accompanist.webview)
 }

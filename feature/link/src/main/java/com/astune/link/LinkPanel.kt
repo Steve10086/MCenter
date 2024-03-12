@@ -1,7 +1,6 @@
 package com.astune.link
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
@@ -27,7 +26,6 @@ import com.astune.database.Device
 import com.astune.database.Link.EmptyLink
 import com.astune.database.Link.Link
 import com.astune.database.Link.NewLink
-import com.astune.database.SSHLink
 import com.astune.database.WebLink
 import com.astune.model.LinkType.*
 
@@ -38,7 +36,7 @@ fun LinkPanel(
     onNavigationToSubApplication: (String) -> Unit,
 ){
     val linkList = linkViewModel.getLinkList(parentId) + NewLink("", parentId)
-    Log.d("LinkPanel", linkList.map{it.id}.toString())
+    //Log.d("LinkPanel", linkList.map{it.id}.toString())
 
     LinkScreen(
         linkList = linkList,
@@ -162,7 +160,7 @@ internal fun LinkScreen(
                 }
                 },
                 title = { Text("Delete?") },
-                text = { Text("Do you really want to delete this link, it will be lost for a long time(very long)!") }
+                text = { Text("Do you want to delete this link?") }
             )
         }
 
@@ -174,7 +172,7 @@ internal fun LinkScreen(
 private fun getDestinationRoute(parentDevice: Device, link: Link) : String{
     return when(link.type){
         WEB_LINK -> "${WEB_LINK.getName()}/${parentDevice.ip}:${link.info}"
-        SSH_LINK -> "${SSH_LINK.getName()}/${parentDevice.ip}:${(link as SSHLink).info}"
+        SSH_LINK -> "${SSH_LINK.getName()}/${parentDevice.ip}/${link.id}"
         else -> throw IllegalArgumentException("illegal link type!")
     }
 }

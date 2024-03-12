@@ -53,7 +53,7 @@ data class WebLink(
 
     @ColumnInfo override val parent: Int,
 
-    @ColumnInfo(name = "address")override val info: String,
+    @ColumnInfo(name = "port")override val info: String,
 ) : Link {
     @Ignore
     override val type: LinkType = LinkType.WEB_LINK
@@ -61,15 +61,19 @@ data class WebLink(
 
 @Entity
 data class SSHLink(
-
     @PrimaryKey(autoGenerate = true) override val id:Int,
 
     @ColumnInfo override val name: String,
 
     @ColumnInfo override val parent: Int,
 
-    @ColumnInfo(name = "address")override val info: String,
-) : Link {
+    @ColumnInfo(name = "port")override val info: String,
+
+    @ColumnInfo val password: String,
+
+    @ColumnInfo val username: String,
+
+    ) : Link {
     @Ignore
     override val type: LinkType = LinkType.SSH_LINK
 }

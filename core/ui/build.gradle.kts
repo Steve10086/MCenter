@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:database"))
+    implementation(project(":core:common"))
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.constraintlayout)

@@ -1,5 +1,6 @@
 plugins {
     id("mcenter.android.library")
+    id("mcenter.android.compose")
 }
 
 android {

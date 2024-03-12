@@ -7,6 +7,7 @@ import androidx.navigation.*
 import androidx.navigation.compose.composable
 import com.astune.link.LinkPanel
 import com.astune.link.subPanels.WebLinkPage
+import com.astune.sshclient.SshShellPanel
 
 fun NavGraphBuilder.linkGraph(navController: NavController){
     navigation(startDestination = "linkPanel/{id}", route = "link/{id}"){
@@ -34,9 +35,32 @@ fun NavGraphBuilder.linkGraph(navController: NavController){
                 nullable = false}),
         ){
             WebLinkPage(
-                uri = it.arguments?.getString("uri") ?:"0",
+                uri = it.arguments?.getString("uri") ?:"",
                 onExit = { navController.popBackStack() }
                 )
+        }
+
+        composable(
+            route = "SSHLink/{address}/{id}",
+            arguments = listOf(
+                navArgument("id") {
+                type = NavType.IntType
+                nullable = false},
+                navArgument("address") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ),
+            enterTransition = {
+                slideIn(initialOffset = { IntOffset(it.width, 0) })
+            },
+            exitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            }
+        ){
+            SshShellPanel(
+                onExit = { navController.popBackStack() }
+            )
         }
     }
 

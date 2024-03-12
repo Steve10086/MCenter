@@ -3,6 +3,8 @@ import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,26 +31,31 @@ class TestSshShell {
             TestShellPage(
                 onButtonClicked = {
                     launch {
-                        sshRepository.send((it + "\n").toByteArray(), connection.shell)
+                        for(c in (it + "\n")){
+                            connection?.let { it1 -> sshRepository.send(c.code.toByte(), it1.shell) }
+                        }
                     } },
                 onExit = {
                     launch {
-                        sshRepository.disconnect(connection)
+                        connection?.let { sshRepository.disconnect(it) }
                     }
                     stopSign = true
                 })
 
         }
 
-        sshRepository.receive(connection.shell).collect(){
-            Log.d("Test", it)
+        connection?.let {
+            sshRepository.receive(it.shell).collect(){
+                Log.d("Test", it)
+            }
         }
 
         while(!stopSign){
             Thread.sleep(5000)
         }
 
-        sshRepository.disconnect(connection)
+        connection?.let { sshRepository.disconnect(it) }
+        return@runBlocking
     }
 }
 
@@ -60,6 +67,10 @@ fun TestShellPage(onButtonClicked:(String) -> Unit = {}, onExit: () -> Unit){
     Surface {
         Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
             TextField(
+                modifier = Modifier.onKeyEvent {
+                    Log.d("SSHtest", "triggred")
+                    true
+                },
                 textStyle = TextStyle(
                     color = MaterialTheme.colorScheme.onBackground
                 ),

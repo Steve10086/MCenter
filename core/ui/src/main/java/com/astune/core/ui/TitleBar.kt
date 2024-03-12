@@ -25,7 +25,9 @@ fun TitleBar(
         ConstraintLayout(modifier = modifier.fillMaxSize()) {
             val (left, right, titleT) = createRefs()
 
-            Text(text = title,
+
+            Text(
+                text = title,
                 fontSize = 24.sp,
                 fontStyle = FontStyle.Italic,
                 modifier = modifier.constrainAs(titleT){

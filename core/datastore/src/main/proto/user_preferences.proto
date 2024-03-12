@@ -11,4 +11,5 @@ message UserPreferences {
   string zerotierPass = 4;
 
   string theme = 5;
+  string sshTheme = 6;
 }

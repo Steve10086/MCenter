@@ -24,8 +24,18 @@ class LinkDataRepository @Inject constructor(
             }
         }.flowOn(ioDispatcher)
 
+    fun getLink(id:Int, linkType: LinkType): Flow<Link> = flow {
+        emit(linkDaoFactory.create(linkType).get(id))
+    }
+
     suspend fun insertLink(link: Link) = linkDaoFactory.create(link.type).insert(link)
 
     suspend fun deleteLink(link: Link) = linkDaoFactory.create(link.type).delete(link)
+
+    suspend fun deleteParent(parent:Int){
+        for (type in LinkType.getApplicableList()){
+            linkDaoFactory.create(type).deleteByParent(parent)
+        }
+    }
 
 }

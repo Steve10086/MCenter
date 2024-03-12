@@ -55,6 +55,9 @@ interface WebLinkDao : LinkDao<WebLink> {
     @Query("Select * from weblink where parent = :parentId")
     override fun getByDevice(parentId: Int):List<WebLink>
 
+    @Query("Select * from sshlink where id = :id")
+    override fun get(id: Int):WebLink
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     override suspend fun insert(link: WebLink)
 
@@ -63,6 +66,9 @@ interface WebLinkDao : LinkDao<WebLink> {
 
     @Delete
     override suspend fun delete(link: WebLink)
+
+    @Query("DELETE FROM weblink WHERE parent = :parent")
+    override suspend fun deleteByParent(parent: Int)
 
     @Query("DELETE FROM sqlite_sequence WHERE name = 'WebLink'")
     override suspend fun resetPrimaryKey()
@@ -76,6 +82,9 @@ interface SSHLinkDao: LinkDao<SSHLink> {
     @Query("Select * from sshlink where parent = :parentId")
     override fun getByDevice(parentId: Int):List<SSHLink>
 
+    @Query("Select * from sshlink where id = :id")
+    override fun get(id: Int):SSHLink
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     override suspend fun insert(link: SSHLink)
     @Update
@@ -83,6 +92,9 @@ interface SSHLinkDao: LinkDao<SSHLink> {
 
     @Delete
     override suspend fun delete(link: SSHLink)
+
+    @Query("DELETE FROM sshlink WHERE parent = :parent")
+    override suspend fun deleteByParent(parent: Int)
 
     @Query("DELETE FROM sqlite_sequence WHERE name = 'SSHLink'")
     override suspend fun resetPrimaryKey()

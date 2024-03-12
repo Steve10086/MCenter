@@ -1,6 +1,7 @@
 plugins {
     id("mcenter.android.library")
     id("mcenter.android.hilt")
+    id("mcenter.android.compose")
 }
 
 android {

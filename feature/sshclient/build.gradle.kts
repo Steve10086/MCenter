@@ -10,6 +10,9 @@ android{
 
 dependencies {
     implementation(project(":core:network"))
+    implementation(project(":core:database"))
+    implementation(project(":core:data"))
+
     implementation(libs.google.accompanist.webview)
     implementation(libs.hierynomus.sshj)
 }

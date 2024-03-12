@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
@@ -20,6 +21,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.astune.core.ui.DeviceCardList
 import com.astune.core.ui.LocalRootUIState
+import com.astune.core.ui.design.LoadingAnimation
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.TextCompat
 import com.astune.core.ui.design.ThemePreview
@@ -205,7 +207,9 @@ fun DeviceSetting(
             TextCompat(
                 titleText = "Name: ",
                 value = name,
-                onValueChange = {name = it}
+                onValueChange = {
+                    name = it
+                }
             )
             TextCompat(
                 titleText = "Address: ",

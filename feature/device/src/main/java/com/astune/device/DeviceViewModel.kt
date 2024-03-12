@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import com.astune.core.sync.MCWorkManager.SyncManager
 import com.astune.data.respository.DeviceDataRepository
+import com.astune.data.respository.LinkDataRepository
 import com.astune.data.utils.getTimeBetween
 import com.astune.database.Device
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DeviceViewModel @Inject constructor(
     private val deviceDataRepository: DeviceDataRepository,
+    private val linkDataRepository: LinkDataRepository,
     private val syncManager: SyncManager
 ): ViewModel() {
     var deviceFlow = MutableStateFlow(emptyList<Device>())
@@ -96,6 +98,7 @@ class DeviceViewModel @Inject constructor(
     fun delete(device: Device){
         viewModelScope.launch(Dispatchers.Main) {
             deviceDataRepository.deleteDevice(device)
+            linkDataRepository.deleteParent(device.id)
             getDeviceList()
         }
     }
