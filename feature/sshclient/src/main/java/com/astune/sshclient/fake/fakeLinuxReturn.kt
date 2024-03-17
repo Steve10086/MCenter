@@ -16,7 +16,34 @@ fun getContent():ShellContent{
     return content
 }
 
+fun getTestContent():ShellContent{
+    val content = ShellContent()
+    decode(content, CommandTest)
+    decode(content, BackSpace)
+    decode(
+        content, MutipleContent)
+    decode(
+        content, MutipleContent)
+    decode(
+        content, MutipleContent)
+    return content
+}
+
 private val MutipleContent = "a"
+
+private val CommandTest = "\u001B[1m\u001B[31mThe programs included with\u001B[38;2;25;10;74m the Debian GNU/Linux system are free software;\n" +
+                "\u001B[mthe exact distribution terms for each program are described in the\n" +
+                "individual files in /usr/share/doc/*/copyright.\u001B[4;5H\n" +
+                "Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent\n" +
+                "permitted by applicable law.\n" +
+                "Last login: Thu Feb 15 00:01:14 2024 from 172.26.131.104\n" +
+                "\u001B[?2004huser@openstick:~\$ \n" +
+                "vim NEW FILE\n" +
+                "\u001B[?2004l\n" +
+                "files to edit\b\n"+
+                "~\u001B[0m//\u001B[24;63H0,0-1\u001B[9CAll\u001B[1;1H"
+
+private val BackSpace = "\b"
 
 
 private val Content1 = "SMP PREEMPT Sun Feb 6 22:10:37 CST 2022 aarch64\n" +

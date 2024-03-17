@@ -9,8 +9,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.astune.model.ShellContent
-import com.astune.model.ShellFunctionParam
 
+class ANSICommendDecoder (val content: ShellContent){
+    fun decodeCommend(text: String){
+        if(content.currentContentSize()!=1 || content.header == null){//record the header of commendLine
+            content.header = text
+        }else{
+            decode(content, text)
+        }
+    }
+}
 
 /**
  * decode ansi terminal codes from the linux server
@@ -23,17 +31,23 @@ fun decode(content: ShellContent, text:String){
 
     var style = SpanStyle()
     val size = text.lines().size - 1
+    val lines = text.replace(".".toRegex(), "").lines()
 
     for (p in 0 .. size){
-        var line = text.lines()[p]
+        var line = lines[p]
+
         val block = StringBuilder()
         while(line != ""){
+            if(line[0] == ''){
+                content.deleteAtPointer()
+                line = line.drop(1)
+            }
             line = line.dropWhile {
                 block.append(it)
                 it != ''
             }
 
-            content += rendText(block.toString().removeSuffix("\u001B"), style)
+            content.insert(rendText(block.toString().removeSuffix("\u001B"), style))
             block.delete(0, block.length)
 
             if(line.startsWith("\u001B[")){
@@ -66,14 +80,14 @@ fun decode(content: ShellContent, text:String){
                         'D' -> content.movePointer(-params[0], 0)
                         'E' -> {
                             content.movePointer(0, params[0])
-                            content.movePointerAbs(x = 0)
+                            execMovePointerAbs(content, 0)
                         }
                         'F' -> {
                             content.movePointer(0, -params[0])
-                            content.movePointerAbs(x = 0)
+                            execMovePointerAbs(content, 0)
                         }
-                        'f','G' -> content.movePointerAbs(x = params[0])
-                        'H' -> content.movePointerAbs(x = params[0], y = params[1])
+                        'f','G' -> execMovePointerAbs(content, params[0])
+                        'H' -> execMovePointerAbs(content, params[0], params[1])
 
                         //deletion
                         'J' -> execDeleteLine(content, params[0])
@@ -105,7 +119,9 @@ fun decode(content: ShellContent, text:String){
 }
 
 
-
+fun execMovePointerAbs(content: ShellContent, x:Int? = null, y:Int? = null){
+    content.movePointerAbs(x?.zeroOrMinusOne(), y?.zeroOrMinusOne()?.plus(content.bounds.first))
+}
 
 fun execDeleteLine(content: ShellContent, commend:Int){
     when(commend){
@@ -118,7 +134,7 @@ fun execDeleteLine(content: ShellContent, commend:Int){
 
 fun execDelete(content: ShellContent, commend:Int){
     when(commend){
-        0 -> content.deleteLine(content.pointer.second, content.pointer.first..content.currentLineLength)
+        0 -> content.deleteLine(content.pointer.second, content.pointer.first..content.currentLineLength())
         1 -> content.deleteLine(content.pointer.second, 0..content.pointer.first)
         2 -> content.delete(content.pointer.second..content.pointer.second)
     }
@@ -174,8 +190,6 @@ fun singleParamStyles(
 }
 
 
-
-
 fun tripleParamStyles(
     values:ShellFunctionParam,
     style: SpanStyle
@@ -204,6 +218,7 @@ fun rgbStyles(
     }
 }
 
+//default colors in shell
 fun colorPlate(color:Int): Color {
     return when (color){
         0 -> Color.Black
@@ -219,4 +234,26 @@ fun colorPlate(color:Int): Color {
 
 operator fun Color.plus(color: Color):Color {
     return Color(blue + color.blue, green + color.green, red + color.red, alpha + color.alpha)
+}
+
+private fun Int.zeroOrMinusOne() = if(this == 0){ 0 }else{this - 1}
+
+/**
+ * function param structure
+ * */
+data class ShellFunctionParam(
+    var params:MutableList<Int>,
+    var size:Int = params.size
+
+){
+    fun changeSize(size:Int){
+        this.size = size
+    }
+
+    operator fun get(i: Int): Int {
+        return params[i]
+    }
+}
+fun ShellFunctionParam(params: List<Int>): ShellFunctionParam {
+    return ShellFunctionParam(params = params.toMutableList())
 }

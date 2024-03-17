@@ -35,7 +35,7 @@ import com.astune.core.ui.design.antaFamily
 import com.astune.core.ui.design.chakraPatchFamily
 import com.astune.core.ui.design.ssh.MCSshTheme
 import com.astune.core.ui.spToPx
-import com.astune.sshclient.fake.getContent
+import com.astune.sshclient.fake.getTestContent
 import kotlin.math.roundToInt
 
 @Composable
@@ -53,7 +53,7 @@ fun SshShellPanel(
             onWindowsSizeChanged = {
                 viewModel.setWindowSize(Size(it.width, it.height))
             },
-            //onEdit = {viewModel.send(it)},
+            onEdit = {viewModel.send(it)},
             onExit = {
                 viewModel.stop()
                 onExit.invoke()
@@ -209,7 +209,7 @@ fun SSHClientPreview(){
     ){
         SshShell(
             displayText = buildAnnotatedString {
-                for(line in getContent().content){
+                for(line in getTestContent().content){
                     append(line)
                 }
             },

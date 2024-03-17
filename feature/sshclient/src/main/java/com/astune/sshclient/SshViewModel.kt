@@ -18,7 +18,7 @@ import com.astune.core.network.repository.SSHRepository
 import com.astune.core.ui.design.SshThemes
 import com.astune.data.respository.LinkDataRepository
 import com.astune.data.respository.UserDataRepository
-import com.astune.data.utils.decode
+import com.astune.data.utils.ANSICommendDecoder
 import com.astune.database.SSHLink
 import com.astune.model.LinkType
 import com.astune.model.ShellContent
@@ -70,6 +70,7 @@ class SshViewModel @Inject constructor(
     var isLoading by mutableStateOf(true)
     var onException by mutableStateOf(false)
     val content:ShellContent by mutableStateOf(ShellContent())
+    val decoder = ANSICommendDecoder(content)
     var displayText:AnnotatedString by mutableStateOf(AnnotatedString(""))
     private var windowSize:Size? = null
 
@@ -104,21 +105,22 @@ class SshViewModel @Inject constructor(
                 sshRepository.receive(it.shell)
                     .flowOn(Dispatchers.IO)
                     .collect(){
-                    decode(content, it)
-                    displayText = buildAnnotatedString {
-                        Log.d("SSHVM", content.content.map{it.text}.toString())
-                        for(line in content.content){
-                            append(line.text)
-                            for(style in line.spanStyles.filter {style ->
-                                style.item != SpanStyle()
-                            }){
-                                addStyle(
-                                    style = style.item, start = style.start, end = style.end
-                                )
+                        Log.d("SSHVM", it.toCharArray().first().code.toString())
+                        decoder.decodeCommend(it)
+                        displayText = buildAnnotatedString {
+                            Log.d("SSHVM", content.content.map{it.text}.toString())
+                            for(line in content.content){
+                                append(line.text)
+                                for(style in line.spanStyles.filter {style ->
+                                    style.item != SpanStyle()
+                                }){
+                                    addStyle(
+                                        style = style.item, start = style.start, end = style.end
+                                    )
+                                }
                             }
                         }
                     }
-                }
             }
         }
     }
@@ -153,12 +155,12 @@ class SshViewModel @Inject constructor(
         return theme
     }
 
-    fun send(keyEvent: KeyEvent){
+    fun send(char: Char?){
         connection?.let {
-            processKey(keyEvent)?.let {c ->
+            char?.let {c ->
                 viewModelScope.launch {
                     if (!sshRepository.send(c.code.toByte() , it.shell)){
-                        isLoading = false
+                        isLoading = true
                     }else{
                         Log.d("SSH", "send $c")
                     }

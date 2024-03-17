@@ -49,7 +49,6 @@ class SSHRepository @Inject constructor(
 
     suspend fun receive(shell:Shell): Flow<String> {
         val content = BufferedReader(InputStreamReader(shell.inputStream))
-
         val buffer = CharArray(1024)
         return flow {
             var len = content.read(buffer)
@@ -79,8 +78,8 @@ class SSHRepository @Inject constructor(
             ssh.authPassword(username, password)
 
             val session: Session = ssh.startSession()
-            try {
-                val shell = session.startShell()
+            session.use { ses ->
+                val shell = ses.startShell()
                 val output = shell.outputStream
                 val input = BufferedReader(InputStreamReader(shell.inputStream))
 
@@ -102,9 +101,6 @@ class SSHRepository @Inject constructor(
                 }
                 // Wait for the reader thread to finish
                 readerThread.join()
-
-            } finally {
-                session.close()
             }
         } finally {
             ssh.disconnect()
