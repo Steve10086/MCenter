@@ -6,22 +6,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,10 +29,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.astune.core.ui.design.MCenterSshTheme
 import com.astune.core.ui.design.SshThemes
 import com.astune.core.ui.design.antaFamily
-import com.astune.core.ui.design.chakraPatchFamily
+import com.astune.core.ui.design.firaCodeFamily
 import com.astune.core.ui.design.ssh.MCSshTheme
 import com.astune.core.ui.spToPx
-import com.astune.sshclient.fake.getTestContent
+import com.astune.sshclient.fake.getTopContent
 import kotlin.math.roundToInt
 
 @Composable
@@ -148,56 +145,32 @@ fun SshClientContent(
     text:AnnotatedString,
     onEdit: (Char) -> Unit,
 ){
-    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text)) }
-
-    var cursorPosition by remember { mutableIntStateOf(0) }
-
-    val textFieldValue = textFieldValueState.copy(text)
-
-    SideEffect {
-        if (textFieldValueState.annotatedString != textFieldValue.annotatedString) {
-            textFieldValueState = textFieldValueState.copy(text)
-        }
-    }
-    Log.d("SSH", text.text)
-
     Surface(
-        modifier = Modifier.fillMaxSize().padding(top = 0.dp),
-        color = Color.Transparent
+        modifier = Modifier.fillMaxSize().padding(top = 0.dp).verticalScroll(rememberScrollState()),
+        color = Color.Transparent,
     ) {
-        BasicTextField(
-            modifier = Modifier
-                .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                .verticalScroll(rememberScrollState()),
-            value = textFieldValueState,
-            textStyle = TextStyle(color = MCSshTheme.colorScheme.onSecondary, fontFamily = chakraPatchFamily, fontSize = 15.sp, lineHeight = 20.sp),
-            onValueChange = {
-                if(textFieldValueState.composition != it.composition ||
-                    textFieldValueState.selection != it.selection){
-                    textFieldValueState = textFieldValueState.copy(
-                        composition = it.composition,
-                        selection = it.selection
-                    )
-                }
 
-                if(cursorPosition != it.selection.start){
-                    cursorPosition = it.selection.start
-                    Log.d("SSH", "position at $cursorPosition")
-                    if(it.text.length > text.text.length){
-                        Log.d("SSH", "sending a ${it.text[cursorPosition - 1]}")
-                        onEdit(it.text[cursorPosition - 1])
-                    }else{
-                        Log.d("SSH", "sending a backspace")
-                        onEdit((8).toChar())
-                    }
-                }
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.None,
-                autoCorrect = false,
-                keyboardType = KeyboardType.Email
-            )
+        Text(
+            modifier = Modifier
+                .padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
+            text = text,
+            fontFamily = firaCodeFamily,
+            color = MCSshTheme.colorScheme.onSecondary,
+            fontSize = 15.sp,
+            lineHeight = 20.sp
         )
+
+        val dummyInput = TextFieldValue("     ", selection = TextRange(4))
+        BasicTextField(modifier = Modifier.fillMaxSize(), value = dummyInput, onValueChange = {
+            if(it.text.length > dummyInput.text.length){
+                Log.d("SSH", "sending a ${it.text[it.selection.start - 1]}")
+                onEdit(it.text[it.selection.start - 1])
+            }else{
+                Log.d("SSH", "sending a backspace")
+                onEdit((8).toChar())
+            }
+        }, cursorBrush = Brush.horizontalGradient(colors = listOf(Color.Transparent, Color.Transparent)))
+
     }
 }
 
@@ -208,11 +181,7 @@ fun SSHClientPreview(){
         theme = SshThemes.black
     ){
         SshShell(
-            displayText = buildAnnotatedString {
-                for(line in getTestContent().content){
-                    append(line)
-                }
-            },
+            displayText = getTopContent().toAnnotatedString(),
             isLoading = false
         )
     }

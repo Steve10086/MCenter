@@ -11,14 +11,20 @@ import androidx.compose.ui.text.withStyle
 import com.astune.model.ShellContent
 
 class ANSICommendDecoder (val content: ShellContent){
+    private var counter = 0
     fun decodeCommend(text: String){
-        if(content.currentContentSize()!=1 || content.header == null){//record the header of commendLine
-            content.header = text
+        counter ++
+        //record the header of commendLine, usually appear at second receiving
+        if(counter == 2 && content.header == null){
+            content.header = text.removePrefix("\n\u001B[").replace(regex, "")
+            decode(content, text)
         }else{
             decode(content, text)
         }
     }
 }
+
+val regex = "^(\\d+;)*[?\\d+]?(\\d+)?([a-zA-Z])".toRegex()
 
 /**
  * decode ansi terminal codes from the linux server
@@ -27,38 +33,44 @@ class ANSICommendDecoder (val content: ShellContent){
  * @param text from the shell
  * */
 fun decode(content: ShellContent, text:String){
-    val regex = "^(\\d+;)*(\\d+)?([a-zA-Z])".toRegex()
-
     var style = SpanStyle()
     val size = text.lines().size - 1
-    val lines = text.replace(".".toRegex(), "").lines()
+    val lines = text.replace("(.)|".toRegex(), "").lines()
 
     for (p in 0 .. size){
         var line = lines[p]
 
         val block = StringBuilder()
+
         while(line != ""){
             if(line[0] == ''){
                 content.deleteAtPointer()
                 line = line.drop(1)
             }
-            line = line.dropWhile {
-                block.append(it)
-                it != ''
+            line = line.dropWhile {c ->
+                if(c != '') {
+                    block.append(c)
+                    true
+                }else{
+                    false
+                }
             }
 
-            content.insert(rendText(block.toString().removeSuffix("\u001B"), style))
-            block.delete(0, block.length)
+            block.toString().removeSuffix("\u001B").takeIf { it != "" }?.let {
+                content.insert(rendText(it, style))
+                block.delete(0, block.length)
+            }
+
 
             if(line.startsWith("\u001B[")){
                 line = line.drop(2)
                 regex.find(line)?.let {
                     val params = ShellFunctionParam(it.value.dropLast(1).split(";").map{
-                        return@map if (it == "") 0 else it.toInt()
+                        return@map if (it == "" || it.contains("?")) 0 else it.toInt()
                     }) //reformat
                     line = line.removePrefix(it.value)
 
-                    params.params += listOf(0,0,0,0,0)
+                    params.params += MutableList(5){null}
 
 
                     //execute function
@@ -74,28 +86,28 @@ fun decode(content: ShellContent, text:String){
                             }
                         }
                         //movement
-                        'A' -> content.movePointer(0, params[0])
-                        'B' -> content.movePointer(0, -params[0])
-                        'C' -> content.movePointer(params[0], 0)
-                        'D' -> content.movePointer(-params[0], 0)
+                        'A' -> content.movePointer(0, -(params[0]?:1))
+                        'B' -> content.movePointer(0, params[0]?:0)
+                        'C' -> content.movePointer(params[0]?:1, 0)
+                        'D' -> content.movePointer(-(params[0]?:1), 0)
                         'E' -> {
-                            content.movePointer(0, params[0])
+                            content.movePointer(0, params[0]?:1)
                             execMovePointerAbs(content, 0)
                         }
                         'F' -> {
-                            content.movePointer(0, -params[0])
+                            content.movePointer(0, -(params[0]?:1))
                             execMovePointerAbs(content, 0)
                         }
-                        'f','G' -> execMovePointerAbs(content, params[0])
-                        'H' -> execMovePointerAbs(content, params[0], params[1])
+                        'f','G' -> execMovePointerAbs(content, params[0]?:1)
+                        'H' -> execMovePointerAbs(content, params[1]?:1, params[0]?:1)
 
                         //deletion
-                        'J' -> execDeleteLine(content, params[0])
-                        'K' -> execDelete(content, params[0])
+                        'J' -> execDeleteLine(content, params[0]?:0)
+                        'K' -> execDelete(content, params[0]?:0)
                         //scroll
                         'r' -> content.moveBoundsAbs(params[0], params[1])
-                        'S' -> execScroll(content, -params[0])
-                        'T' -> execScroll(content, params[0])
+                        'S' -> execScroll(content, -(params[0]?:1))
+                        'T' -> execScroll(content, params[0]?:1)
                         //pointer
                         's' -> content.storePointer()
                         'u' -> content.restorePointer()
@@ -108,7 +120,7 @@ fun decode(content: ShellContent, text:String){
             }
         }
         if(p < size){
-            content += listOf(AnnotatedString("\n"))
+            content.insert(AnnotatedString("\n"))
         }
     }
 
@@ -134,7 +146,7 @@ fun execDeleteLine(content: ShellContent, commend:Int){
 
 fun execDelete(content: ShellContent, commend:Int){
     when(commend){
-        0 -> content.deleteLine(content.pointer.second, content.pointer.first..content.currentLineLength())
+        0 -> content.deleteLine(content.pointer.second, content.pointer.first..content.currentLineLength() + 1)
         1 -> content.deleteLine(content.pointer.second, 0..content.pointer.first)
         2 -> content.delete(content.pointer.second..content.pointer.second)
     }
@@ -160,7 +172,7 @@ fun ANSIToStyle(
     style: SpanStyle = SpanStyle()
 ):SpanStyle{
     when (params.size){
-        1 -> return singleParamStyles(params[0], style)
+        1 -> return singleParamStyles(params[0]?:0, style)
         3 -> return tripleParamStyles(params, style)
         5 -> return rgbStyles(params, style)
     }
@@ -198,8 +210,8 @@ fun tripleParamStyles(
     assert(values.size == 3)
 
     return when(values[0]){
-        38 -> style.copy(color = Color(values[2]))
-        48 -> style.copy(background = Color(values[2]))
+        38 -> style.copy(color = Color(values[2]?:0))
+        48 -> style.copy(background = Color(values[2]?:0))
         else -> {style}
     }
 }
@@ -212,8 +224,8 @@ fun rgbStyles(
     assert(values.size == 5)
 
     return when(values[0]){
-        38 -> style.copy(color = Color(values[2],values[3],values[4]))
-        48 -> style.copy(background = Color(values[2],values[3],values[4]))
+        38 -> style.copy(color = Color(values[2]?:0,values[3]?:0,values[4]?:0))
+        48 -> style.copy(background = Color(values[2]?:0,values[3]?:0,values[4]?:0))
         else -> {style}
     }
 }
@@ -242,7 +254,7 @@ private fun Int.zeroOrMinusOne() = if(this == 0){ 0 }else{this - 1}
  * function param structure
  * */
 data class ShellFunctionParam(
-    var params:MutableList<Int>,
+    var params:MutableList<Int?>,
     var size:Int = params.size
 
 ){
@@ -250,10 +262,10 @@ data class ShellFunctionParam(
         this.size = size
     }
 
-    operator fun get(i: Int): Int {
+    operator fun get(i: Int): Int? {
         return params[i]
     }
 }
-fun ShellFunctionParam(params: List<Int>): ShellFunctionParam {
+fun ShellFunctionParam(params: List<Int?>): ShellFunctionParam {
     return ShellFunctionParam(params = params.toMutableList())
 }

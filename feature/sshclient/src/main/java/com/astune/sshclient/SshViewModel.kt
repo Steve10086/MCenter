@@ -7,8 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +34,7 @@ class SshViewModel @Inject constructor(
     private val linkDataRepository: LinkDataRepository,
     savedStateHandle: SavedStateHandle,
 ):ViewModel(){
+    var onException by mutableStateOf(false)
 
     var delay by mutableStateOf(" ...")
 
@@ -68,7 +67,6 @@ class SshViewModel @Inject constructor(
     }
 
     var isLoading by mutableStateOf(true)
-    var onException by mutableStateOf(false)
     val content:ShellContent by mutableStateOf(ShellContent())
     val decoder = ANSICommendDecoder(content)
     var displayText:AnnotatedString by mutableStateOf(AnnotatedString(""))
@@ -88,6 +86,7 @@ class SshViewModel @Inject constructor(
                     link.password
                 )
             if (connection == null){
+                Log.d("SSH", "connection failed!")
                 onException = true
                 return@launch
             }
@@ -105,21 +104,10 @@ class SshViewModel @Inject constructor(
                 sshRepository.receive(it.shell)
                     .flowOn(Dispatchers.IO)
                     .collect(){
-                        Log.d("SSHVM", it.toCharArray().first().code.toString())
+                        Log.d("SSHVM", it)
                         decoder.decodeCommend(it)
-                        displayText = buildAnnotatedString {
-                            Log.d("SSHVM", content.content.map{it.text}.toString())
-                            for(line in content.content){
-                                append(line.text)
-                                for(style in line.spanStyles.filter {style ->
-                                    style.item != SpanStyle()
-                                }){
-                                    addStyle(
-                                        style = style.item, start = style.start, end = style.end
-                                    )
-                                }
-                            }
-                        }
+                        displayText = content.toAnnotatedString()
+                        //Log.d("SSHVM", displayText.toString())
                     }
             }
         }
