@@ -11,16 +11,8 @@ import androidx.compose.ui.text.withStyle
 import com.astune.model.ShellContent
 
 class ANSICommendDecoder (val content: ShellContent){
-    private var counter = 0
     fun decodeCommend(text: String){
-        counter ++
-        //record the header of commendLine, usually appear at second receiving
-        if(counter == 2 && content.header == null){
-            content.header = text.removePrefix("\n\u001B[").replace(regex, "")
-            decode(content, text)
-        }else{
-            decode(content, text)
-        }
+        decode(content, text)
     }
 }
 
@@ -99,7 +91,7 @@ fun decode(content: ShellContent, text:String){
                             execMovePointerAbs(content, 0)
                         }
                         'f','G' -> execMovePointerAbs(content, params[0]?:1)
-                        'H' -> execMovePointerAbs(content, params[1]?:1, params[0]?:1)
+                        'H' -> execMovePointerAbs(content, params[1]?:0, params[0]?:0)
 
                         //deletion
                         'J' -> execDeleteLine(content, params[0]?:0)
@@ -137,8 +129,11 @@ fun execMovePointerAbs(content: ShellContent, x:Int? = null, y:Int? = null){
 
 fun execDeleteLine(content: ShellContent, commend:Int){
     when(commend){
-        0 -> content.delete(content.bounds.first..content.pointer.second)
-        1 -> content.delete(content.pointer.second..content.bounds.second)
+        0 -> {
+            content.delete(content.pointer.second + 1..content.bounds.second)
+            execDelete(content, 0)
+        }
+        1 -> content.delete(content.bounds.first..content.pointer.second)
         2 -> content.delete(content.bounds.first..content.bounds.second)
         3 -> content.delete(0 until content.content.size)
     }

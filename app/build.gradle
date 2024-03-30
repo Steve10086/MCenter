@@ -17,7 +17,7 @@ android {
         minSdk 27
         targetSdk 33
         versionCode 1
-        versionName "1.1.1"
+        versionName "1.2.0"
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled(true)
 
@@ -41,8 +41,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     buildFeatures {
-        dataBinding true
-        viewBinding true
         compose true
     }
     composeOptions {

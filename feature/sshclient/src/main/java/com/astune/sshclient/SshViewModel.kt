@@ -42,7 +42,6 @@ class SshViewModel @Inject constructor(
 
     var link:SSHLink? = null
 
-
     //get link from database
     init {
         viewModelScope.launch{
@@ -52,7 +51,9 @@ class SshViewModel @Inject constructor(
                     .flowOn(Dispatchers.IO)
                     .collect(){
                         link = it as SSHLink
-                        connect(it)
+                        windowSize?.let { _ ->
+                            connect(it)
+                        }
                         viewModelScope.launch {
                             netWorkRepository.getAveragePing(address + ":" + link!!.info, 5000).collect {
                                 delay = "$it ms"
@@ -67,8 +68,8 @@ class SshViewModel @Inject constructor(
     }
 
     var isLoading by mutableStateOf(true)
-    val content:ShellContent by mutableStateOf(ShellContent())
-    val decoder = ANSICommendDecoder(content)
+    private var content:ShellContent by mutableStateOf(ShellContent())
+    private val decoder = ANSICommendDecoder(content)
     var displayText:AnnotatedString by mutableStateOf(AnnotatedString(""))
     private var windowSize:Size? = null
 
@@ -83,15 +84,17 @@ class SshViewModel @Inject constructor(
                     address!!,
                     link.info.toInt(),
                     link.username,
-                    link.password
+                    link.password,
+                    null,
+                    null,
+                    windowSize?.width,
+                    windowSize?.height
                 )
+            content.windowsHeight = windowSize?.height?:0
             if (connection == null){
                 Log.d("SSH", "connection failed!")
                 onException = true
                 return@launch
-            }
-            windowSize?.let {
-                sshRepository.changeWindowsSize(connection!!, it)
             }
             getShellContent()
             isLoading = false
@@ -107,27 +110,27 @@ class SshViewModel @Inject constructor(
                         Log.d("SSHVM", it)
                         decoder.decodeCommend(it)
                         displayText = content.toAnnotatedString()
-                        //Log.d("SSHVM", displayText.toString())
                     }
             }
         }
     }
 
+    fun considerInsets() =
+        content.pointer.second - content.bounds.first > content.windowsHeight / 2
 
-    fun setWindowSize(size: Size){
-        Log.d("SSH", "windows Size Changed!")
-        connection?.let {
-            viewModelScope.launch(Dispatchers.IO) {
-                sshRepository.changeWindowsSize(
-                    it,
-                    size
-                )
-            }
-            Log.d("SSH", "connection established, current size $size")
-            isLoading = false
-        } ?: run{
+    fun startWithWindowSize(size: Size){
+        if (windowSize == null){
+            Log.d("SSH", "windows Size Changed!")
             windowSize = size
-            Log.d("SSH", "connection establishing, new size $size")
+            link?.let {
+                viewModelScope.launch(Dispatchers.IO) {
+                    connect(it)
+                }
+                Log.d("SSH", "connection established, current size $size")
+                isLoading = false
+            } ?: run{
+                Log.d("SSH", "connection establishing, new size $size")
+            }
         }
     }
 
@@ -149,8 +152,6 @@ class SshViewModel @Inject constructor(
                 viewModelScope.launch {
                     if (!sshRepository.send(c.code.toByte() , it.shell)){
                         isLoading = true
-                    }else{
-                        Log.d("SSH", "send $c")
                     }
                 }
             }

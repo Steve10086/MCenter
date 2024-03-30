@@ -2,32 +2,29 @@ package com.astune.model
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.text.*
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import kotlin.math.max
+import kotlin.math.min
 
 class ShellContent(
     content: SnapshotStateList<AnnotatedString> = mutableStateListOf(AnnotatedString("")),
-    windowsHeight: Int = 0
+    var windowsHeight: Int = 0
 ) {
-    var windowsHeight = windowsHeight
 
     var bounds = Pair(0, windowsHeight)
         private set
+
     var content = content
         private set
 
     var pointer = defaultPointer()
         private set
 
-    var header:String? = null
-
-    var headerList = MutableList(content.size){
-        false
-    }
-        private set
-
-    fun currentLineLength() = content[pointer.second + bounds.first].length - 1
+    fun currentLineLength() = content[pointer.second].length - 1
 
     fun currentContentSize() = content.size - 1
 
@@ -39,15 +36,13 @@ class ShellContent(
         Pair(this , this + windowsHeight)
     }
 
-
     private var oldPointer = pointer
 
     fun movePointerAbs(x: Int? = pointer.first, y: Int? = pointer.second) {
         pointer = Pair(x?: pointer.first, y?:pointer.second)
-        //update header if new lines are generated
-        headerList += List(max((y?:pointer.second) - currentContentSize(), 0)){false}
 
         content.padEnd(pointer)
+        bounds = defaultBounds()
     }
 
     fun movePointer(x: Int, y: Int) {
@@ -64,12 +59,11 @@ class ShellContent(
             }
             return@with this
         }
-        //update header if new lines are generated
-        headerList += List(max(newY - currentContentSize(), 0)){false}
 
         pointer = Pair(newX, newY)
-
+        bounds = defaultBounds()
         content.padEnd(pointer)
+
     }
 
     fun moveBoundsAbs(up: Int?, down: Int?) {
@@ -87,15 +81,15 @@ class ShellContent(
         content.removeAll(content.filterIndexed { index, _ ->
             index in range
         })
-        movePointer(0, pointer.second - range.count())
-        content += AnnotatedString("")
+        movePointer(0, - (pointer.second - range.first).positiveOrZero())
+        if(content.isEmpty()) content += AnnotatedString("")
     }
 
     /**
      * delete the text at position within range
      * */
     fun deleteLine(y: Int, range: IntRange) {
-        val index = y + bounds.first
+        val index = y
         val oldLength = content[index].length
         buildAnnotatedString {
             range.first.takeIf {
@@ -130,22 +124,26 @@ class ShellContent(
         if (pointer == defaultPointer()) {
             if(content.last().isEmpty()){
                 content.dropLast(1)
-                headerList.dropLast(1)
             }else{
                 content[content.size - 1] = content.last().subSequence(0, currentLineLength())
-                content.removeIf {
-                    it.isEmpty()
+                if(content[content.size - 1].isEmpty()){
+                    content.dropLast(1)
                 }
             }
             pointer = defaultPointer()
-            return
-        }
-        if(content[pointer.second].isEmpty() || content[pointer.second].text == "\t"){
-            content.removeAt(pointer.second)
-            headerList.removeAt(pointer.second)
         }else{
-            content[pointer.second] = content[pointer.second].subSequence(TextRange(0, pointer.first)) +
-                    content[pointer.second].subSequence(TextRange(pointer.first + 1, content[pointer.second].length))
+            if(content[pointer.second].isEmpty() || content[pointer.second].text == "\t"){
+                content.removeAt(pointer.second)
+            }else{
+                content[pointer.second] = content[pointer.second].subSequence(
+                    TextRange(0, pointer.first.positiveOrZero())
+                ) + content[pointer.second].subSequence(
+                    TextRange(
+                        min(pointer.first + 1, content[pointer.second].length - 1),
+                        content[pointer.second].length
+                    )
+                )
+            }
         }
     }
 
@@ -157,39 +155,24 @@ class ShellContent(
         pointer = Pair(oldPointer.first, oldPointer.second)
     }
 
-    fun setHeaderAt(index:Int, value:Boolean){headerList.getOrNull(index)?.let{
-        headerList[index] = value
-    }}
-
-    fun insert(lines: AnnotatedString, isHeader:Boolean? = null){
+    fun insert(lines: AnnotatedString){
         if(pointer == defaultPointer()){
             this += lines.cleanStyles()
         }else{
             //if pointer is not at end, replace anything with new input
             lines.lines().also {it ->
-                it.forEachIndexed { index, l ->
-                    var line = l
-                    if(header != null && pointer.first == 0){
-                        if(line.startsWith(header!!)){
-                            line = line.replace(header!!, "")
-                            headerList[pointer.second] = true
-                        }else{
-                            headerList[pointer.second] = false
-                        }
-                    }
+                it.forEachIndexed { index, line ->
 
                     val temporaryLine = AnnotatedString(line, lines.spanStyles)
 
                     //replace the old line with newline at the start
-                    content[pointer.second] = (content[pointer.second].subSequence(0, pointer.first) +
+                    content[pointer.second] = (content[pointer.second].subSequence(0, pointer.first.positiveOrZero()) +
                         if(temporaryLine.lastIndex + pointer.first >= currentLineLength()){
                             temporaryLine
                         }else{
-                            temporaryLine + content[pointer.second].subSequence(TextRange(temporaryLine.length + pointer.first, content[pointer.second].length))
+                            temporaryLine + content[pointer.second].subSequence(TextRange(temporaryLine.length + pointer.first.positiveOrZero(), content[pointer.second].length))
                         }).cleanStyles()
 
-
-                    isHeader?.let{headerList[pointer.second] = it}
 
                     if(index != it.lastIndex){
                         movePointerAbs(0)
@@ -203,56 +186,37 @@ class ShellContent(
     }
 
     fun toAnnotatedString() = buildAnnotatedString {
-        var headerSpace = 0
         content.onEachIndexed { index, line ->
-            if(headerList.getOrElse(index){false}){
-                withStyle(HeaderStyle){
-                    append(header)
-                }
-                headerSpace += header?.length ?: 0
-            }
             for(style in line.spanStyles.filter {style ->
                 style.item != SpanStyle()
             }){
-                val offset = this.length + headerSpace
+                val offset = this.length
                 addStyle(
                     style = style.item, start = style.start + offset, end = style.end + offset
                 )
             }
+            if (index == pointer.second){
+                addStyle(
+                    style = PointerStyle, start = pointer.first + this.length, end = pointer.first + 1 + this.length
+                )
+            }
             append(line.text + "\n")
-
         }
     }
 
 
     private operator fun plusAssign(lines: List<AnnotatedString>) {
         lines.onEach { line ->
-            if(header!=null){
-                header?.let{prefix ->
-                    headerList += if(line.contains(prefix)){
-                        content += line.subSequence(startIndex = prefix.length, line.length)
-                        true
-                    }else{
-                        content += line
-                        false
-                    }
-                }
-            }else{
-                content += line
-                headerList += false
-            }
+            content += line
         }
         pointer = defaultPointer()
+        bounds = defaultBounds()
     }
 
     private operator fun plusAssign(lines: AnnotatedString) {
         lines.lines().also {
-            if(header!=null){
-                header?.let{prefix ->
-                    headerList[currentContentSize()] = it[0].contains(prefix) || headerList[currentContentSize()]
-                }
-            }
-            content[currentContentSize()] += AnnotatedString(it[0].removePrefix(header?:""), lines.spanStyles)
+
+            content[currentContentSize()] += AnnotatedString(it[0], lines.spanStyles)
 
             for (line in it.drop(1)) {
                 this += listOf(AnnotatedString(line, lines.spanStyles))
@@ -264,11 +228,18 @@ class ShellContent(
     }
 }
 
-val HeaderStyle = SpanStyle(fontWeight = FontWeight.Medium)
+private fun Int.positiveOrZero() =
+    if(this < 0){
+        0
+    }else {
+        this
+    }
+
 
 /**
  * padding vertically with empty annotatedString,
  * then padding horizontally with space
+ * return true if padding applied
  * */
 private fun MutableList<AnnotatedString>.padEnd(newEnd: Pair<Int, Int>) {
     val newX = newEnd.first
@@ -296,3 +267,5 @@ fun AnnotatedString.cleanStyles() = buildAnnotatedString {
 }
 
 val EmptyStyle = SpanStyle()
+
+val PointerStyle = SpanStyle(background = Color.LightGray)

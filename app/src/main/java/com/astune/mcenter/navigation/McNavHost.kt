@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.astune.core.ui.ColumnWithTitleBarSpacer
 import com.astune.device.DevicePanel
 import com.astune.link.navigation.linkGraph
 import com.astune.mcenter.ui.MCAppState
@@ -23,7 +24,11 @@ fun McNavHost(
 
     NavHost(modifier = modifier, navController = navHostController, startDestination = "device"){
 
-        composable("setting") { SettingPanel() }
+        composable("setting") {
+            ColumnWithTitleBarSpacer{
+                SettingPanel()
+            }
+        }
 
         composable(
             route = "device",
@@ -42,11 +47,12 @@ fun McNavHost(
                 }
             }
         ) {
-            DevicePanel(
-                onNavigateToLink = { navHostController.navigate("linkPanel/$it")},
-            )
+            ColumnWithTitleBarSpacer {
+                DevicePanel(
+                    onNavigateToLink = { navHostController.navigate("linkPanel/$it")},
+                )
+            }
         }
-
 
         linkGraph(navHostController)
     }

@@ -32,14 +32,12 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DevicePanel(
-    modifier: Modifier = Modifier,
     deviceViewModel: DeviceViewModel = hiltViewModel(),
     onNavigateToLink: (String) -> Unit,
 ){
     val devices = deviceViewModel.deviceFlow.collectAsState().value
 
     DeviceScreen(
-        modifier = modifier,
         deviceList = devices,
         onDeviceCardBtnClicked = { device ->  onNavigateToLink(device.id.toString())},
         deleteDevice = { device ->  deviceViewModel.delete(device) },
@@ -58,7 +56,6 @@ fun DevicePanel(
 
 @Composable
 internal fun DeviceScreen(
-    modifier: Modifier,
     deviceList: List<Device>,
     onDeviceCardBtnClicked: (Device) -> Unit = {},
     onRefresh: () -> Unit = {},
@@ -77,7 +74,7 @@ internal fun DeviceScreen(
         showInsertDialog = true
     }
 
-    Box(modifier = modifier, contentAlignment = Alignment.TopCenter) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         var expended by remember { mutableStateOf(false) }
 
         Box(
@@ -257,7 +254,7 @@ internal fun PanelPreview(){
         deviceList.add(Device(0, "testdevice", "null", null))
     }
     MCenterTheme {
-        DeviceScreen(modifier = Modifier.fillMaxSize(), deviceList)
+        DeviceScreen(deviceList)
     }
 }
 

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import net.schmizz.sshj.SSHClient
+import net.schmizz.sshj.connection.channel.direct.PTYMode
 import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.connection.channel.direct.Session.Shell
 import net.schmizz.sshj.connection.channel.direct.Signal
@@ -21,13 +22,14 @@ import kotlin.concurrent.thread
 class SSHRepository @Inject constructor(
     private val client: SSHClient
 ) {
-    suspend fun connect(host:String, port:Int, username:String, password:String): SshConnection? {
+    suspend fun connect(host:String, port:Int, username:String, password:String, width:Int?, height:Int?, col:Int?, row:Int?): SshConnection? {
         try{
             client.addHostKeyVerifier(PromiscuousVerifier())
             client.connect(host, port)
             client.authPassword(username, password)
             val session = client.startSession()
-            session.allocateDefaultPTY()
+            /*default with customized size*/
+            session.allocatePTY("vt100", col?:80, row?:24, width?:0, height?:0, emptyMap<PTYMode, Int>())
             return SshConnection(session.startShell(), session)
         }catch (e:Exception){
             client.close()
@@ -35,17 +37,20 @@ class SSHRepository @Inject constructor(
         return null
     }
 
-    suspend fun send(message:Byte, shell:Shell): Boolean{
-        if (shell.isOpen){
-            return withContext(Dispatchers.IO) {
-                shell.outputStream.write(message.toInt())
-                shell.outputStream.flush()
-                return@withContext true
-            }
-        } else {
-            return false
+    /**
+     * return true if the shell is still open
+     * */
+    suspend fun send(message:Byte, shell:Shell) = if (shell.isOpen){
+        withContext(Dispatchers.IO) {
+            shell.outputStream.write(message.toInt())
+            shell.outputStream.flush()
+            return@withContext true
         }
+    } else {
+        false
     }
+
+
 
     suspend fun receive(shell:Shell): Flow<String> {
         val content = BufferedReader(InputStreamReader(shell.inputStream))

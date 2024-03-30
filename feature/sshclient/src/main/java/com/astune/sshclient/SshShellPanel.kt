@@ -1,8 +1,10 @@
 package com.astune.sshclient
 
+import android.os.Build
 import android.util.Log
 import android.util.Size
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -10,15 +12,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,9 +38,7 @@ import com.astune.core.ui.design.SshThemes
 import com.astune.core.ui.design.antaFamily
 import com.astune.core.ui.design.firaCodeFamily
 import com.astune.core.ui.design.ssh.MCSshTheme
-import com.astune.core.ui.spToPx
 import com.astune.sshclient.fake.getTopContent
-import kotlin.math.roundToInt
 
 @Composable
 fun SshShellPanel(
@@ -48,14 +53,15 @@ fun SshShellPanel(
             delay = viewModel.delay,
             isLoading = viewModel.isLoading,
             onWindowsSizeChanged = {
-                viewModel.setWindowSize(Size(it.width, it.height))
+                viewModel.startWithWindowSize(Size(it.width, it.height))
             },
             onEdit = {viewModel.send(it)},
             onExit = {
                 viewModel.stop()
                 onExit.invoke()
             },
-            displayText = viewModel.displayText
+            displayText = viewModel.displayText,
+            considerInsets = viewModel.considerInsets()
         )
     }
 }
@@ -69,36 +75,23 @@ fun SshShell(
     onExit:() -> Unit = {},
     onEdit:(Char) -> Unit = {},
     displayText:AnnotatedString,
+    considerInsets: Boolean = false
 ){
-    val contentSize = spToPx(15f, LocalContext.current).roundToInt()
-    val contentHeight = spToPx(24f, LocalContext.current).roundToInt()
     Column(
         modifier = Modifier.fillMaxWidth().background(color = MCSshTheme.colorScheme.secondary),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.statusBarsPadding())
         SshClientHeader(
             user, delay, onExit
         )
-        if(isLoading){
-            Box(
-                modifier = Modifier.
-                    fillMaxSize().
-                    onGloballyPositioned {
-                        val width = it.size.width / contentSize
-                        val height = it.size.height / contentHeight
-                        onWindowsSizeChanged(IntSize(width, height))
-                                         },
-                contentAlignment = Alignment.Center
-            ){
-                LinearProgressIndicator()
-            }
-        }else{
-            SshClientContent(
-                text = displayText,
-                onEdit = onEdit
-            )
-        }
+        SshClientContent(
+            text = displayText,
+            onEdit = onEdit,
+            isLoading = isLoading,
+            considerInsets = considerInsets,
+            onWindowsSizeChanged = onWindowsSizeChanged,
+        )
     }
 }
 
@@ -140,36 +133,104 @@ fun SshClientHeader(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun SshClientContent(
     text:AnnotatedString,
     onEdit: (Char) -> Unit,
+    isLoading: Boolean,
+    considerInsets: Boolean,
+    onWindowsSizeChanged: (IntSize) -> Unit,
 ){
+    val scrollState = rememberScrollState(0)
+    var contentHeight by remember { mutableIntStateOf(0) }
+    LaunchedEffect(contentHeight){
+        scrollState.scrollTo(scrollState.maxValue)
+    }
     Surface(
-        modifier = Modifier.fillMaxSize().padding(top = 0.dp).verticalScroll(rememberScrollState()),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 0.dp)
+            .verticalScroll(scrollState)
+            .onSizeChanged {
+                contentHeight = it.height
+                           },
         color = Color.Transparent,
     ) {
-
-        Text(
-            modifier = Modifier
-                .padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
-            text = text,
-            fontFamily = firaCodeFamily,
-            color = MCSshTheme.colorScheme.onSecondary,
-            fontSize = 15.sp,
-            lineHeight = 20.sp
-        )
-
-        val dummyInput = TextFieldValue("     ", selection = TextRange(4))
-        BasicTextField(modifier = Modifier.fillMaxSize(), value = dummyInput, onValueChange = {
-            if(it.text.length > dummyInput.text.length){
-                Log.d("SSH", "sending a ${it.text[it.selection.start - 1]}")
-                onEdit(it.text[it.selection.start - 1])
-            }else{
-                Log.d("SSH", "sending a backspace")
-                onEdit((8).toChar())
+        val dummyInput = TextFieldValue("          ", selection = TextRange(1))
+        val focusRequester = remember{ FocusRequester() }
+        var onInput by remember { mutableStateOf(false) }
+        var fontWidth = 0;
+        var fontHeight = 0;
+        Box(modifier = Modifier.sizeIn(minWidth = 0.dp, minHeight = 0.dp)){
+            BasicTextField(
+                modifier = Modifier
+                    .onGloballyPositioned {
+                        fontWidth = it.size.width / 10
+                        fontHeight = it.size.height
+                    }
+                    .focusRequester(focusRequester),
+                value = dummyInput,
+                onValueChange = {
+                    if(it.text.length > dummyInput.text.length){
+                        Log.d("SSH", "sending a ${it.text[it.selection.start - 1]}")
+                        onEdit(it.text[it.selection.start - 1])
+                    }else if (it.text.length < dummyInput.text.length){
+                        Log.d("SSH", "sending a backspace")
+                        onEdit((8).toChar())
+                    }
+                },
+                textStyle = TextStyle(fontFamily = firaCodeFamily, fontSize = 15.sp, lineHeight = 20.sp),
+                cursorBrush = Brush.horizontalGradient(colors = listOf(Color.Transparent, Color.Transparent))
+            )
+        }
+        if(isLoading){
+            Box(
+                modifier = Modifier.
+                fillMaxSize().
+                onGloballyPositioned {
+                    val width = it.size.width / fontWidth
+                    val height = it.size.height / fontHeight
+                    onWindowsSizeChanged(IntSize(width, height))
+                },
+                contentAlignment = Alignment.Center
+            ){
+                LinearProgressIndicator()
             }
-        }, cursorBrush = Brush.horizontalGradient(colors = listOf(Color.Transparent, Color.Transparent)))
+        }else{
+            val softwareKeyboardController = LocalSoftwareKeyboardController.current
+            var isImeOpen by remember { mutableStateOf(true) }
+            if(Build.VERSION.SDK_INT >= 30) {
+                isImeOpen = WindowInsets.isImeVisible
+            }
+
+            Text(
+                modifier = Modifier
+                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+                    .clickable {
+                        onInput = if(!onInput || !isImeOpen){
+                            focusRequester.requestFocus()
+                            softwareKeyboardController?.show()
+                            true
+                        }else{
+                            focusRequester.freeFocus()
+                            softwareKeyboardController?.hide()
+                            false
+                        }
+                    }.then(
+                        if (considerInsets) {
+                            Modifier.imePadding()
+                        } else {
+                            Modifier
+                        }
+                    ),
+                text = text,
+                fontFamily = firaCodeFamily,
+                color = MCSshTheme.colorScheme.onSecondary,
+                fontSize = 15.sp,
+                lineHeight = 20.sp
+            )
+        }
 
     }
 }

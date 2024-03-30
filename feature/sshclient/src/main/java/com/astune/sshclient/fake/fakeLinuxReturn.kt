@@ -36,7 +36,8 @@ fun getTestContent():ShellContent{
 }
 
 fun getTopContent():ShellContent{
-    val content = ShellContent()
+    val content = ShellContent(windowsHeight = 33)
+    decode(content, TopFunction)
     decode(content, TopFunction)
     decode(content, TopFunctionRefresh)
     return content
@@ -46,31 +47,40 @@ private val MutipleContent = "a"
 
 private fun moveTo(x:Int, y:Int) = "\u001B[$y;"+ x + "H"
 
-private val TopFunction = "\u001B[H\u001B[J\u001B[m\u000Ftop - 00:37:27 up 4 days, 1\u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
-        "Tasks:\u001B[m\u000F\u001B[1m 109 \u001B[m\u000Ftotal,\u001B[m\u000F\u001B[1m   2 \u001B[m\u000Frunni\u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
-        "%Cpu(s):\u001B[m\u000F\u001B[1m  0.0 \u001B[m\u000Fus,\u001B[m\u000F\u001B[1m  5.6 \u001B[m\u000Fsy,\u001B[m\u000F\u001B[1m \u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
+private val TopFunction = "\u001B[H\u001B[J\u001B[m\u000Ftop - 06:25:29 up 17 days, \u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
+        "Tasks:\u001B[m\u000F\u001B[1m 109 \u001B[m\u000Ftotal,\u001B[m\u000F\u001B[1m   1 \u001B[m\u000Frunni\u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
+        "%Cpu(s):\u001B[m\u000F\u001B[1m  1.5 \u001B[m\u000Fus,\u001B[m\u000F\u001B[1m  2.9 \u001B[m\u000Fsy,\u001B[m\u000F\u001B[1m \u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
         "MiB Mem :\u001B[m\u000F\u001B[1m    382.1 \u001B[m\u000Ftotal,\u001B[m\u000F\u001B[1m  \u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
         "MiB Swap:\u001B[m\u000F\u001B[1m    191.0 \u001B[m\u000Ftotal,\u001B[m\u000F\u001B[1m  \u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
         "\u001B[K\n" +
         "\u001B[7m    PID USER      PR  NI \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    434 user      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    273 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    441 zerotie+  20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    317 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    227 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F  10017 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F  10081 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F\u001B[1m  10115 user      20   0 \u001B[m\u000F\u001B[K\n" +
         "\u001B[m\u000F      1 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F   3243 user      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    284 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F   3240 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    282 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    265 systemd+  20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    283 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    279 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    253 systemd+  20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    396 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F   3264 user      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F    247 root      20   0 \u001B[m\u000F\u001B[K\n" +
-        "\u001B[m\u000F   3244 user      20   0 "
+        "\u001B[m\u000F      2 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F      3 root       0 -20 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F      4 root       0 -20 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F      8 root       0 -20 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F      9 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     10 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     11 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     12 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     13 root      rt   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     14 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     15 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     16 root      rt   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     17 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     20 root      20 \n" +
+        "\u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     21 root      rt   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     22 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     25 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     26 root      rt   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     27 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     30 root      20   0 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     31 root       0 -20 \u001B[m\u000F\u001B[K\n" +
+        "\u001B[m\u000F     32 root       0 -20 \u001B[m\u000F\u001B[KR"
 
 private val TopFunctionRefresh = "\u001B[H\u001B[m\u000Ftop - 07:35:09 up 5 days,  \u001B[m\u000F\u001B[m\u000F\u001B[K\n" +
         "\n" +
