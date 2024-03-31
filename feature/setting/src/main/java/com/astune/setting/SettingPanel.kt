@@ -44,7 +44,6 @@ fun SettingPanel(
         onAvatarChanged = { viewModel.updateAvatar(it) })
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
     modifier: Modifier = Modifier,
@@ -110,7 +109,12 @@ fun SettingScreen(
                             name = it
                             userInfo.name = it
                         },
-                        colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent))
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                        )
+                    )
                 }
                 Row (modifier = Modifier.constrainAs(emailText){
                     top.linkTo(nameText.bottom, 5.dp)
@@ -138,7 +142,7 @@ fun SettingScreen(
                     start.linkTo(parent.start, 15.dp) },
                     verticalAlignment = Alignment.CenterVertically,
                 ){
-                    Text("Theme: ${theme.takeIf { it == "" }?:"light"} ", style = MaterialTheme.typography.titleMedium)
+                    Text("Theme: ${if (theme != "") theme else "light"} ", style = MaterialTheme.typography.titleMedium)
                     Switch(
                         checked = theme == "dark",
                         onCheckedChange = {

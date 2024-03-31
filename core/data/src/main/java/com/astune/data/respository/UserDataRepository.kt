@@ -63,13 +63,21 @@ class UserDataRepository @Inject constructor(
             val avatarOutputStream =
                 Files.newOutputStream(Paths.get(context.filesDir.toString() + Environment.AVATAR_PATH))
             val newSize = if(avatar.width > avatar.height) avatar.height else avatar.width
-            val newAvatar = Bitmap.createBitmap(
+            var newAvatar = Bitmap.createBitmap(
                 avatar,
                 (avatar.width - newSize) / 2,
                 (avatar.height - newSize) / 2,
                 newSize,
                 newSize,
             )
+            if(newSize > 1024){
+                newAvatar = Bitmap.createScaledBitmap(
+                    newAvatar,
+                    1024,
+                    1024,
+                    true
+                )
+            }
 
             newAvatar.compress(Bitmap.CompressFormat.JPEG, 100, avatarOutputStream)
             avatarOutputStream.close()

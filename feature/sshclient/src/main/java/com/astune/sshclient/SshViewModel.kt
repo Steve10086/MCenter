@@ -45,7 +45,7 @@ class SshViewModel @Inject constructor(
     //get link from database
     init {
         viewModelScope.launch{
-            Log.d("SSH", savedStateHandle.toString())
+            //Log.d("SSH", savedStateHandle.toString())
             if(savedStateHandle.get<Int>("id") != null){
                 linkDataRepository.getLink(savedStateHandle.get<Int>("id")!!, LinkType.SSH_LINK)
                     .flowOn(Dispatchers.IO)
