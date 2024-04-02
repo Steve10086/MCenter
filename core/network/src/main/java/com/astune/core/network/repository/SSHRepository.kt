@@ -40,9 +40,9 @@ class SSHRepository @Inject constructor(
     /**
      * return true if the shell is still open
      * */
-    suspend fun send(message:Byte, shell:Shell) = if (shell.isOpen){
+    suspend fun send(message:ByteArray, shell:Shell) = if (shell.isOpen){
         withContext(Dispatchers.IO) {
-            shell.outputStream.write(message.toInt())
+            shell.outputStream.write(message)
             shell.outputStream.flush()
             return@withContext true
         }

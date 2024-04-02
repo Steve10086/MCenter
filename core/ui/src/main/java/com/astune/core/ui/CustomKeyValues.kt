@@ -3,7 +3,7 @@ package com.astune.core.ui
 
 enum class CustomKey(
     val id: String,
-    val text: String
+    val text: String,
 ){
 
     Esc(

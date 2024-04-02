@@ -27,7 +27,7 @@ val regex = "^(\\d+;)*[?\\d+]?(\\d+)?([a-zA-Z])".toRegex()
 fun decode(content: ShellContent, text:String){
     var style = SpanStyle()
     val size = text.lines().size - 1
-    val lines = text.replace("(.)|".toRegex(), "").lines()
+    val lines = text.replace("([^\b])||".toRegex(), "").lines()
 
     for (p in 0 .. size){
         var line = lines[p]
@@ -35,7 +35,7 @@ fun decode(content: ShellContent, text:String){
         val block = StringBuilder()
 
         while(line != ""){
-            if(line[0] == ''){
+            while(line.isNotEmpty() && line[0] == ''){
                 content.deleteAtPointer()
                 line = line.drop(1)
             }

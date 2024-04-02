@@ -8,7 +8,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import kotlin.math.max
-import kotlin.math.min
 
 class ShellContent(
     content: SnapshotStateList<AnnotatedString> = mutableStateListOf(AnnotatedString("")),
@@ -125,24 +124,32 @@ class ShellContent(
             if(content.last().isEmpty()){
                 content.dropLast(1)
             }else{
-                content[content.size - 1] = content.last().subSequence(0, currentLineLength())
-                if(content[content.size - 1].isEmpty()){
-                    content.dropLast(1)
-                }
+                content[currentContentSize()] = content.last().subSequence(0, currentLineLength())
             }
             pointer = defaultPointer()
         }else{
-            if(content[pointer.second].isEmpty() || content[pointer.second].text == "\t"){
+            if(content[pointer.second].isEmpty()){
                 content.removeAt(pointer.second)
+                movePointer(0, -1)
+                movePointerAbs(x = currentLineLength())
             }else{
-                content[pointer.second] = content[pointer.second].subSequence(
-                    TextRange(0, pointer.first.positiveOrZero())
-                ) + content[pointer.second].subSequence(
-                    TextRange(
-                        min(pointer.first + 1, content[pointer.second].length - 1),
-                        content[pointer.second].length
-                    )
-                )
+                content[pointer.second] =
+                    // if pointer at zero, drop the first char, else taking chars before the pointer
+                    (pointer.first.takeIf { it > 0 }?.let {
+                    content[pointer.second].subSequence(
+                        TextRange(0, pointer.first)
+                    ) } ?: AnnotatedString("")) +
+                    // if the pointer at end, drop the last char, else taking chars after the pointer
+                    (pointer.first.takeIf { it < currentLineLength() }?.let {
+                        content[pointer.second].subSequence(
+                            TextRange(
+                                pointer.first + 1,
+                                content[pointer.second].length
+                            )
+                        )
+                    } ?: AnnotatedString(""))
+
+                movePointer(-1, 0)
             }
         }
     }
@@ -160,7 +167,7 @@ class ShellContent(
             this += lines.cleanStyles()
         }else{
             //if pointer is not at end, replace anything with new input
-            lines.lines().also {it ->
+            lines.lines().also {
                 it.forEachIndexed { index, line ->
 
                     val temporaryLine = AnnotatedString(line, lines.spanStyles)
@@ -178,7 +185,7 @@ class ShellContent(
                         movePointerAbs(0)
                         movePointer(0,1)
                     }else{
-                        movePointer(temporaryLine.length, 0)
+                        movePointer(temporaryLine.length - 1, 0)
                     }
                 }
             }

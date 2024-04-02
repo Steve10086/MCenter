@@ -5,7 +5,6 @@ import android.util.Size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -13,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.astune.core.network.`object`.SshConnection
 import com.astune.core.network.repository.NetWorkRepository
 import com.astune.core.network.repository.SSHRepository
+import com.astune.core.ui.CustomKey
+import com.astune.core.ui.CustomKey.*
 import com.astune.core.ui.design.SshThemes
 import com.astune.data.respository.LinkDataRepository
 import com.astune.data.respository.UserDataRepository
@@ -72,6 +73,7 @@ class SshViewModel @Inject constructor(
     private val decoder = ANSICommendDecoder(content)
     var displayText:AnnotatedString by mutableStateOf(AnnotatedString(""))
     private var windowSize:Size? = null
+    private var keyState:MutableMap<CustomKey, Boolean> = mutableMapOf()
 
     //Initialize connection
     private var connection: SshConnection? = null
@@ -150,12 +152,46 @@ class SshViewModel @Inject constructor(
         connection?.let {
             char?.let {c ->
                 viewModelScope.launch {
-                    if (!sshRepository.send(c.code.toByte() , it.shell)){
+                    if (!sshRepository.send(c.toString().toByteArray() , it.shell)){
                         isLoading = true
                     }
                 }
             }
         }
+    }
+
+    fun sendArray(array: ByteArray){
+        connection?.let {
+            viewModelScope.launch {
+                if(!sshRepository.send(array, it.shell)){
+                    isLoading = true
+                }
+            }
+        }
+    }
+
+    fun onKeyClicked(name: CustomKey, oldState:Boolean):Boolean{
+        when(name){
+            Alt, Ctrl -> {
+                keyState[name] = !oldState
+                return !oldState
+            }
+            Esc -> send((27).toChar())
+            Tab -> send((9).toChar())
+            Up -> {
+                sendArray("\u001B[A".toByteArray())
+            }
+            Down -> {
+                sendArray("\u001B[B".toByteArray())
+            }
+            Left -> {
+                sendArray("\u001B[D".toByteArray())
+            }
+            Right -> {
+                sendArray("\u001B[C".toByteArray())
+            }
+        }
+        return false
     }
 
     fun stop(){
@@ -168,20 +204,4 @@ class SshViewModel @Inject constructor(
     }
 
 
-}
-
-fun processKey(event: KeyEvent):Char? {
-    if (event.key.keyCode in Key.A.keyCode..Key.Z.keyCode) {
-        val c = event.utf16CodePoint.toChar()
-        return if (event.isShiftPressed) {
-            c.uppercaseChar()
-        } else {
-            c
-        }
-    }
-    return when (event.key) {
-        Key.ShiftLeft, Key.ShiftRight -> null
-        Key.Backspace -> null
-        else -> event.utf16CodePoint.toChar()
-    }
 }

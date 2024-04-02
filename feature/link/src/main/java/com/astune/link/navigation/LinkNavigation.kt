@@ -9,7 +9,7 @@ import androidx.navigation.compose.composable
 import com.astune.core.ui.ColumnWithTitleBarSpacer
 import com.astune.link.LinkPanel
 import com.astune.link.subPanels.WebLinkPage
-import com.astune.sshclient.SshShellPanel
+import com.astune.sshclient.SshClientPanel
 
 fun NavGraphBuilder.linkGraph(navController: NavController){
     navigation(startDestination = "linkPanel/{id}", route = "link/{id}"){
@@ -72,7 +72,7 @@ fun NavGraphBuilder.linkGraph(navController: NavController){
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         ){
-            SshShellPanel(
+            SshClientPanel(
                 onExit = { navController.popBackStack() }
             )
         }

@@ -21,7 +21,6 @@ fun getTestContent():ShellContent{
     val content = ShellContent()
     val decoder = ANSICommendDecoder(content)
     decoder.decodeCommend(FirstContent)
-    decoder.decodeCommend(Header)
     decoder.decodeCommend(CommandTest)
     decoder.decodeCommend(BackSpace)
     decoder.decodeCommend(MutipleContent)
@@ -30,7 +29,6 @@ fun getTestContent():ShellContent{
     decoder.decodeCommend(moveTo(1,4))
     decoder.decodeCommend(BackSpace)
     decoder.decodeCommend(moveTo(1, 12))
-    decoder.decodeCommend(Header)
     decoder.decodeCommend(moveTo(1, 112))
     return content
 }
@@ -40,6 +38,8 @@ fun getTopContent():ShellContent{
     decode(content, TopFunction)
     decode(content, TopFunction)
     decode(content, TopFunctionRefresh)
+    decode(content, "\b\b\b\b")
+
     return content
 }
 
@@ -94,8 +94,8 @@ private val TopFunctionRefresh = "\u001B[H\u001B[m\u000Ftop - 07:35:09 up 5 days
         "\u001B[m\u000F    108 root      rt   0 \u001B[m\u000F\u001B[K\n" +
         "\u001B[m\u000F   3407 root      20   0 \u001B[m\u000F\u001B[K\n" +
         "\n" +
-        "\n"
-        //"\u001B[J"
+        "\n" +
+        "this is a test"
 
 private val FirstContent = "\u001B[1m\u001B[31mThe programs included with\u001B[38;2;25;10;74m the Debian GNU/Linux system are free software;\n" +
         "the exact distribution\u001B[m terms for each program are described in the\n" +
@@ -103,8 +103,6 @@ private val FirstContent = "\u001B[1m\u001B[31mThe programs included with\u001B[
         "Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent\n" +
         "permitted by applicable law.\n" +
         "Last login: Thu Feb 15 00:01:14 2024 from 172.26.131.104\n"
-
-private val Header = "\n\u001B[?2004huser@openstick:~\$ "
 
 private val CommandTest ="\n\u001B[?2004huser@openstick:~\$ \n" +"\u001B[?2004huser@openstick:~\$ \n" +"\u001B[?2004huser@openstick:~\$ " +
                 "vim NEW FILE\n" +

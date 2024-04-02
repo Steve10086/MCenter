@@ -5,9 +5,11 @@ import android.util.Log
 import android.util.Size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -33,6 +35,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.astune.core.ui.CustomKey
+import com.astune.core.ui.CustomKeyColumn
+import com.astune.core.ui.CustomKeyLists
 import com.astune.core.ui.design.MCenterSshTheme
 import com.astune.core.ui.design.SshThemes
 import com.astune.core.ui.design.antaFamily
@@ -41,14 +46,14 @@ import com.astune.core.ui.design.ssh.MCSshTheme
 import com.astune.sshclient.fake.getTopContent
 
 @Composable
-fun SshShellPanel(
+fun SshClientPanel(
     viewModel: SshViewModel = hiltViewModel(),
     onExit: () -> Unit
 ){
     MCenterSshTheme(
         theme = viewModel.getClientTheme()
     ){
-        SshShell(
+        SshCilent(
             user = viewModel.link?.username ?:"user",
             delay = viewModel.delay,
             isLoading = viewModel.isLoading,
@@ -60,20 +65,23 @@ fun SshShellPanel(
                 viewModel.stop()
                 onExit.invoke()
             },
+            onKeyClicked = {name, state -> viewModel.onKeyClicked(name, state) },
             displayText = viewModel.displayText,
             considerInsets = viewModel.considerInsets()
         )
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SshShell(
+fun SshCilent(
     user:String = "user",
     delay:String = " ...",
     isLoading:Boolean = false,
     onWindowsSizeChanged:(IntSize) -> Unit = {},
     onExit:() -> Unit = {},
     onEdit:(Char) -> Unit = {},
+    onKeyClicked:(CustomKey, Boolean) -> Boolean = { _, _->true},
     displayText:AnnotatedString,
     considerInsets: Boolean = false
 ){
@@ -85,13 +93,31 @@ fun SshShell(
         SshClientHeader(
             user, delay, onExit
         )
-        SshClientContent(
-            text = displayText,
-            onEdit = onEdit,
-            isLoading = isLoading,
-            considerInsets = considerInsets,
-            onWindowsSizeChanged = onWindowsSizeChanged,
-        )
+        Box(){
+            SshClientContent(
+                text = displayText,
+                onEdit = onEdit,
+                isLoading = isLoading,
+                considerInsets = considerInsets,
+                onWindowsSizeChanged = onWindowsSizeChanged,
+            )
+            if(Build.VERSION.SDK_INT < 30 || WindowInsets.isImeVisible){
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter
+                ){
+                    CustomKeyColumn(
+                        modifier = Modifier.imePadding(),
+                        keyList = CustomKeyLists.Shell.keyList,
+                        backGroundColor = MCSshTheme.colorScheme.tertiary,
+                        keyColor = MCSshTheme.colorScheme.secondary,
+                        textColor = MCSshTheme.colorScheme.onSecondary,
+                        onKeyClicked = onKeyClicked
+                    )
+                }
+            }
+        }
+
     }
 }
 
@@ -203,35 +229,38 @@ fun SshClientContent(
             if(Build.VERSION.SDK_INT >= 30) {
                 isImeOpen = WindowInsets.isImeVisible
             }
-
-            Text(
-                modifier = Modifier
-                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                    .clickable {
-                        onInput = if(!onInput || !isImeOpen){
-                            focusRequester.requestFocus()
-                            softwareKeyboardController?.show()
-                            true
-                        }else{
-                            focusRequester.freeFocus()
-                            softwareKeyboardController?.hide()
-                            false
-                        }
-                    }.then(
-                        if (considerInsets) {
-                            Modifier.imePadding()
-                        } else {
-                            Modifier
-                        }
-                    ),
-                text = text,
-                fontFamily = firaCodeFamily,
-                color = MCSshTheme.colorScheme.onSecondary,
-                fontSize = 15.sp,
-                lineHeight = 20.sp
-            )
+            SelectionContainer {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() })
+                        {
+                            onInput = if(!onInput || !isImeOpen){
+                                focusRequester.requestFocus()
+                                softwareKeyboardController?.show()
+                                true
+                            }else{
+                                focusRequester.freeFocus()
+                                softwareKeyboardController?.hide()
+                                false
+                            }
+                        }.then(
+                            if (considerInsets) {
+                                Modifier.imePadding()
+                            } else {
+                                Modifier
+                            }
+                        ),
+                    text = text,
+                    fontFamily = firaCodeFamily,
+                    fontSize = 15.sp,
+                    lineHeight = 20.sp,
+                    color = MCSshTheme.colorScheme.onSecondary
+                )
+            }
         }
-
     }
 }
 
@@ -241,7 +270,7 @@ fun SSHClientPreview(){
     MCenterSshTheme(
         theme = SshThemes.black
     ){
-        SshShell(
+        SshCilent(
             displayText = getTopContent().toAnnotatedString(),
             isLoading = false
         )

@@ -35,6 +35,7 @@ class SshColorScheme(
     onPrimary: Color,
     secondary: Color,
     onSecondary: Color,
+    tertiary: Color,
 ){
     var primary by mutableStateOf(primary, structuralEqualityPolicy())
         internal set
@@ -44,10 +45,12 @@ class SshColorScheme(
         internal set
     var onSecondary by mutableStateOf(onSecondary, structuralEqualityPolicy())
         internal set
+    var tertiary by mutableStateOf(tertiary, structuralEqualityPolicy())
+    internal set
 
     fun copy():SshColorScheme{
         return SshColorScheme(
-            primary, onPrimary, secondary, onSecondary
+            primary, onPrimary, secondary, onSecondary, tertiary
         )
     }
 }
@@ -57,12 +60,14 @@ fun blackSshColorScheme(
     onPrimary: Color = ssh_theme_black_onPrimary,
     secondary: Color = ssh_theme_black_secondary,
     onSecondary: Color = ssh_theme_black_onSecondary,
+    tertiary: Color = ssh_theme_black_Tertiary,
 ):SshColorScheme{
     return SshColorScheme(
         primary,
         onPrimary,
         secondary,
-        onSecondary
+        onSecondary,
+        tertiary
     )
 }
 
@@ -71,12 +76,14 @@ fun violentSshColorScheme(
     onPrimary: Color = ssh_theme_violent_onPrimary,
     secondary: Color = ssh_theme_violent_secondary,
     onSecondary: Color = ssh_theme_violent_onSecondary,
+    tertiary: Color = ssh_theme_violent_Tertiary,
 ):SshColorScheme{
     return SshColorScheme(
         primary,
         onPrimary,
         secondary,
-        onSecondary
+        onSecondary,
+        tertiary
     )
 }
 

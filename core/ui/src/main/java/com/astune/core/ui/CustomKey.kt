@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Surface
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.ThemePreview
@@ -20,22 +21,27 @@ import com.astune.core.ui.design.ThemePreview
 fun Key(
     modifier: Modifier = Modifier,
     key: CustomKey,
-    onKeyClicked: (String) -> Unit,
+    onKeyClicked: (CustomKey, Boolean) -> Boolean,
+    keyColor: Color = MaterialTheme.colorScheme.onPrimary,
+    textColor: Color = MaterialTheme.colorScheme.primary
 ){
+    var state by remember { mutableStateOf(false) }
     Surface(
         modifier = modifier
             .padding(5.dp)
             .clickable {
-                       onKeyClicked(key.id)
+                       state = onKeyClicked(key, state)
                        },
         shape = MaterialTheme.shapes.extraSmall,
-        color = MaterialTheme.colorScheme.onPrimary,
+        color = keyColor.copy(
+            alpha = (if(state)0.5 else 1).toFloat()
+        ),
     ) {
         Box(modifier = Modifier.padding(start = 5.dp, end = 5.dp),
             contentAlignment =  Alignment.Center){
             Text(
                 text = key.text,
-                color = MaterialTheme.colorScheme.primary
+                color = textColor
             )
         }
     }
@@ -46,11 +52,14 @@ fun Key(
 fun CustomKeyColumn(
     modifier: Modifier = Modifier,
     keyList: List<CustomKey> = emptyList(),
-    onKeyClicked: (String) -> Unit = {}
+    backGroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    keyColor: Color = MaterialTheme.colorScheme.onPrimary,
+    textColor: Color = MaterialTheme.colorScheme.primary,
+    onKeyClicked: (CustomKey, Boolean) -> Boolean = {_,_->true},
     ){
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.primaryContainer
+        color = backGroundColor
     ) {
         Box(contentAlignment = Alignment.CenterStart){
             LazyRow(
@@ -60,13 +69,14 @@ fun CustomKeyColumn(
                 items(keyList){key ->
                     Key(
                         key = key,
-                        onKeyClicked = onKeyClicked
+                        onKeyClicked = onKeyClicked,
+                        keyColor = keyColor,
+                        textColor = textColor
                     )
                 }
             }
         }
     }
-
 }
 
 @ThemePreview
@@ -74,7 +84,8 @@ fun CustomKeyColumn(
 fun CustomKeyColumnPreview(){
     MCenterTheme {
         CustomKeyColumn(
-            keyList = CustomKeyLists.Shell.keyList
+            keyList = CustomKeyLists.Shell.keyList,
+            onKeyClicked = {_,_->false}
         )
     }
 }
@@ -85,7 +96,7 @@ fun CustomKeyPreview(){
     MCenterTheme {
         Key(
             key = CustomKey.Ctrl,
-            onKeyClicked = {}
+            onKeyClicked = {_,_->true}
         )
     }
 }
