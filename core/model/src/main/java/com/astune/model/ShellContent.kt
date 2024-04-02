@@ -46,8 +46,8 @@ class ShellContent(
 
     fun movePointer(x: Int, y: Int) {
         val newX = with(pointer.first + x) {
-            if (this < 0) {
-                return@with 0
+            if (this < -1) {
+                return@with -1
             }
             return@with this
         }
@@ -92,9 +92,10 @@ class ShellContent(
         val oldLength = content[index].length
         buildAnnotatedString {
             range.first.takeIf {
-                it > 0
+                it >= 0
             }?.let {
                 append(
+                    // retain zero to first
                     content[index].subSequence(TextRange(0, it))
                 )
             }
@@ -110,7 +111,7 @@ class ShellContent(
         }?.let {
             content[index] = it
             if (pointer.second == index) {
-                movePointer(-(oldLength - 1 - currentLineLength()), 0) // move the pointer to follow the edited text
+                movePointer(-(oldLength - currentLineLength()), 0) // move the pointer to follow the edited text
             }
             return
         }
@@ -135,19 +136,16 @@ class ShellContent(
             }else{
                 content[pointer.second] =
                     // if pointer at zero, drop the first char, else taking chars before the pointer
-                    (pointer.first.takeIf { it > 0 }?.let {
                     content[pointer.second].subSequence(
-                        TextRange(0, pointer.first)
-                    ) } ?: AnnotatedString("")) +
+                        TextRange(0, pointer.first.positiveOrZero())
+                    ) +
                     // if the pointer at end, drop the last char, else taking chars after the pointer
-                    (pointer.first.takeIf { it < currentLineLength() }?.let {
-                        content[pointer.second].subSequence(
-                            TextRange(
-                                pointer.first + 1,
-                                content[pointer.second].length
-                            )
+                    content[pointer.second].subSequence(
+                        TextRange(
+                            pointer.first + 1,
+                            content[pointer.second].length
                         )
-                    } ?: AnnotatedString(""))
+                    )
 
                 movePointer(-1, 0)
             }
@@ -162,6 +160,9 @@ class ShellContent(
         pointer = Pair(oldPointer.first, oldPointer.second)
     }
 
+    /**
+     * insert the given line after the pointer
+     * */
     fun insert(lines: AnnotatedString){
         if(pointer == defaultPointer()){
             this += lines.cleanStyles()
@@ -169,23 +170,32 @@ class ShellContent(
             //if pointer is not at end, replace anything with new input
             lines.lines().also {
                 it.forEachIndexed { index, line ->
-
                     val temporaryLine = AnnotatedString(line, lines.spanStyles)
 
-                    //replace the old line with newline at the start
-                    content[pointer.second] = (content[pointer.second].subSequence(0, pointer.first.positiveOrZero()) +
-                        if(temporaryLine.lastIndex + pointer.first >= currentLineLength()){
-                            temporaryLine
-                        }else{
-                            temporaryLine + content[pointer.second].subSequence(TextRange(temporaryLine.length + pointer.first.positiveOrZero(), content[pointer.second].length))
-                        }).cleanStyles()
+                    if(content[pointer.second].isEmpty()){
+                        content[pointer.second] = temporaryLine.cleanStyles()
+                    }else{
+                        //replace the old line with newline at the start
+                        content[pointer.second] = (content[pointer.second].subSequence(0, pointer.first + 1) +
+                                // if new line will exceed the original length, replace the rest
+                                if(temporaryLine.lastIndex + pointer.first + 1 >= currentLineLength()){
+                                    temporaryLine
+                                }else{
+                                    temporaryLine + content[pointer.second].subSequence(
+                                        TextRange(
+                                            temporaryLine.length + pointer.first + 1,
+                                            content[pointer.second].length
+                                        )
+                                    )
 
+                                }).cleanStyles()
+                    }
 
                     if(index != it.lastIndex){
-                        movePointerAbs(0)
+                        movePointerAbs(-1)
                         movePointer(0,1)
                     }else{
-                        movePointer(temporaryLine.length - 1, 0)
+                        movePointer(temporaryLine.length, 0)
                     }
                 }
             }

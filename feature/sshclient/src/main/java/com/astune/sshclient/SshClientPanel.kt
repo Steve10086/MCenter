@@ -186,8 +186,8 @@ fun SshClientContent(
         val dummyInput = TextFieldValue("          ", selection = TextRange(1))
         val focusRequester = remember{ FocusRequester() }
         var onInput by remember { mutableStateOf(false) }
-        var fontWidth = 0;
-        var fontHeight = 0;
+        var fontWidth = 0
+        var fontHeight = 0
         Box(modifier = Modifier.sizeIn(minWidth = 0.dp, minHeight = 0.dp)){
             BasicTextField(
                 modifier = Modifier

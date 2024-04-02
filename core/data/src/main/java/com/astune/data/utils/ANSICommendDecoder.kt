@@ -124,7 +124,7 @@ fun decode(content: ShellContent, text:String){
 
 
 fun execMovePointerAbs(content: ShellContent, x:Int? = null, y:Int? = null){
-    content.movePointerAbs(x?.zeroOrMinusOne(), y?.zeroOrMinusOne()?.plus(content.bounds.first))
+    content.movePointerAbs(x?.minus(1), y?.zeroOrMinusOne()?.plus(content.bounds.first))
 }
 
 fun execDeleteLine(content: ShellContent, commend:Int){
@@ -141,7 +141,7 @@ fun execDeleteLine(content: ShellContent, commend:Int){
 
 fun execDelete(content: ShellContent, commend:Int){
     when(commend){
-        0 -> content.deleteLine(content.pointer.second, content.pointer.first..content.currentLineLength() + 1)
+        0 -> content.deleteLine(content.pointer.second, content.pointer.first + 1..content.currentLineLength() + 1)
         1 -> content.deleteLine(content.pointer.second, 0..content.pointer.first)
         2 -> content.delete(content.pointer.second..content.pointer.second)
     }
