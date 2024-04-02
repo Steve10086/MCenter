@@ -95,7 +95,6 @@ class ShellContent(
                 it >= 0
             }?.let {
                 append(
-                    // retain zero to first
                     content[index].subSequence(TextRange(0, it))
                 )
             }
@@ -267,7 +266,7 @@ private fun MutableList<AnnotatedString>.padEnd(newEnd: Pair<Int, Int>) {
         }
     }
     if (this[newY].length <= newX) {
-        this[newY] += AnnotatedString("\u3000".repeat(max(newX - this[newY].length, 0)))//horizontally padding
+        this[newY] += AnnotatedString("\u3000".repeat(max(newX - this[newY].lastIndex, 0)))//horizontally padding
     }
 }
 

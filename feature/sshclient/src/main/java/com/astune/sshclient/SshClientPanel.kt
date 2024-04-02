@@ -3,6 +3,8 @@ package com.astune.sshclient
 import android.os.Build
 import android.util.Log
 import android.util.Size
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,6 +33,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,21 +104,26 @@ fun SshCilent(
                 considerInsets = considerInsets,
                 onWindowsSizeChanged = onWindowsSizeChanged,
             )
-            if(Build.VERSION.SDK_INT < 30 || WindowInsets.isImeVisible){
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ){
-                    CustomKeyColumn(
-                        modifier = Modifier.imePadding(),
-                        keyList = CustomKeyLists.Shell.keyList,
-                        backGroundColor = MCSshTheme.colorScheme.tertiary,
-                        keyColor = MCSshTheme.colorScheme.secondary,
-                        textColor = MCSshTheme.colorScheme.onSecondary,
-                        onKeyClicked = onKeyClicked
-                    )
+            androidx.compose.animation.AnimatedVisibility(
+                visible = Build.VERSION.SDK_INT < 30 || WindowInsets.isImeVisible,
+                enter = slideIn {IntOffset(0, it.height)},
+                exit = slideOut {IntOffset(0, it.height)},
+                content = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ){
+                        CustomKeyColumn(
+                            modifier = Modifier.imePadding(),
+                            keyList = CustomKeyLists.Shell.keyList,
+                            backGroundColor = MCSshTheme.colorScheme.tertiary,
+                            keyColor = MCSshTheme.colorScheme.secondary,
+                            textColor = MCSshTheme.colorScheme.onSecondary,
+                            onKeyClicked = onKeyClicked
+                        )
+                    }
                 }
-            }
+            )
         }
 
     }

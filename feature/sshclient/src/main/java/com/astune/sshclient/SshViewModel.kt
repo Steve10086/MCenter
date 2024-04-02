@@ -151,8 +151,9 @@ class SshViewModel @Inject constructor(
     fun send(char: Char?){
         connection?.let {
             char?.let {c ->
+                val fChar = getCompositeChar(c)
                 viewModelScope.launch {
-                    if (!sshRepository.send(c.toString().toByteArray() , it.shell)){
+                    if (!sshRepository.send(fChar.toString().toByteArray() , it.shell)){
                         isLoading = true
                     }
                 }
@@ -172,24 +173,17 @@ class SshViewModel @Inject constructor(
 
     fun onKeyClicked(name: CustomKey, oldState:Boolean):Boolean{
         when(name){
-            Alt, Ctrl -> {
+            Ctrl -> {
                 keyState[name] = !oldState
                 return !oldState
             }
             Esc -> send((27).toChar())
             Tab -> send((9).toChar())
-            Up -> {
-                sendArray("\u001B[A".toByteArray())
-            }
-            Down -> {
-                sendArray("\u001B[B".toByteArray())
-            }
-            Left -> {
-                sendArray("\u001B[D".toByteArray())
-            }
-            Right -> {
-                sendArray("\u001B[C".toByteArray())
-            }
+            Alt -> sendArray("\u001B[".toByteArray())
+            Up -> sendArray("\u001B[A".toByteArray())
+            Down -> sendArray("\u001B[B".toByteArray())
+            Left -> sendArray("\u001B[D".toByteArray())
+            Right -> sendArray("\u001B[C".toByteArray())
         }
         return false
     }
@@ -201,6 +195,27 @@ class SshViewModel @Inject constructor(
                 connection = null
             }
         }
+    }
+
+    fun getCompositeChar(char: Char): Char {
+        if(keyState[Ctrl] == true){
+            return when(char){
+                'c' -> (3).toChar() //EOT
+                'd' -> (4).toChar() //EOF
+                'z' -> (26).toChar()//Substitute
+                'l' -> (12).toChar()//ClearScreen
+                'u' -> (21).toChar()//Delete line
+                'w' -> (23).toChar()//Delete word
+                'r' -> (18).toChar()//Search history
+                'a' -> (1).toChar() //Move to start
+                'e' -> (5).toChar() //Move to end
+                'k' -> (11).toChar()//Delete from cursor to end
+                'y' -> (25).toChar()//Restore
+                't' -> (20).toChar()//Swap last two letter
+                else -> char
+            }
+        }
+        return char
     }
 
 

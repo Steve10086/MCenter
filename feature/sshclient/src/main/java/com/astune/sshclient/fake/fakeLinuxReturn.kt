@@ -17,6 +17,13 @@ fun getContent():ShellContent{
     return content
 }
 
+fun getNmtuiContent():ShellContent{
+    val content = ShellContent()
+    decode(
+        content, Nmtui)
+    return content
+}
+
 fun getTestContent():ShellContent{
     val content = ShellContent()
     val decoder = ANSICommendDecoder(content)
@@ -95,7 +102,7 @@ private val TopFunctionRefresh = "\u001B[H\u001B[m\u000Ftop - 07:35:09 up 5 days
         "\u001B[m\u000F   3407 root      20   0 \u001B[m\u000F\u001B[K\n" +
         "\n" +
         "\n" +
-        "this is a test"
+        "\u001B[6;1H\u001B[7m Unknown command - try 'h' for help \u001B[m\u000F\u001B[K"
 
 private val FirstContent = "\u001B[1m\u001B[31mThe programs included with\u001B[38;2;25;10;74m the Debian GNU/Linux system are free software;\n" +
         "the exact distribution\u001B[m terms for each program are described in the\n" +
@@ -173,6 +180,8 @@ private val Content1 = "SMP PREEMPT Sun Feb 6 22:10:37 CST 2022 aarch64\n" +
                 "~\n" +
                 "~\n" +
                 "~\u001B[0m//\u001B[24;63H0,0-1\u001B[9CAll\u001B[1;1H"
+
+private val Nmtui = "\u001B[1;30r\u001B(B\u001B)0\u001B[m\u000F\u001B[1;30r\u001B[H\u001B[J\u001B[1;1H\u001B[10;11H\u000Elqu\u001B[m\u000F\u000F NetworkManager TUI \u000Etqqk\u001B[11;11Hx\u001B[25Cx\u001B[12;11Hx\u001B[m\u000F\u000F Please select an option \u000Ex\u001B[13;11Hx\u001B[25Cx\u001B[14;11Hx\u001B[m\u000F\u000F \u001B[1m\u001B[7mEdit a connection      \u001B[m\u000F \u000Ex\u001B[15;11Hx\u001B[m\u000F\u000F Activate a connection   \u000Ex\u001B[16;11Hx\u001B[m\u000F\u000F Set system hostname\u001B[5C\u000Ex\u001B[17;11Hx\u001B[25Cx\u001B[18;11Hx\u001B[m\u000F\u000F Quit\u001B[20C\u000Ex\u001B[19;11Hx\u001B[25Cx\u001B[20;11Hx\u001B[20C\u001B[m\u000F\u000F<OK> \u000Ex\u001B[21;11Hx\u001B[25Cx\u001B[22;11Hmqqqqqqqqqqqqqqqqqqqqqqqqqj\u001B[14;13H"
 
 private val LineContent = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n1\n" +
         "2\n" +
