@@ -21,11 +21,11 @@ class PingSynchronizer @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val networkRepository: NetWorkRepository,
     private val syncManager: SyncManager
-) : CoroutineWorker(ctx, params) {
-
+) : CoroutineWorker(ctx, params){
     override suspend fun doWork(): Result {
         val ipList = inputData.getStringArray("ip")?: emptyArray()
         val results = mutableMapOf<String, Int>()
+        applicationContext
         runBlocking {
             for (ip in ipList){
                 launch {

@@ -45,7 +45,6 @@ fun DevicePanel(
         editDevice = { device ->  deviceViewModel.insert(device) },
         onRefresh = {
             deviceViewModel.ping(devices.getIp())
-            deviceViewModel.getDelay(devices = devices)
             Log.i("Device", "refreshed")
         }
     )

@@ -38,15 +38,15 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.astune.core.ui.CustomKey
 import com.astune.core.ui.CustomKeyColumn
-import com.astune.core.ui.CustomKeyLists
 import com.astune.core.ui.design.MCenterSshTheme
 import com.astune.core.ui.design.SshThemes
 import com.astune.core.ui.design.antaFamily
 import com.astune.core.ui.design.firaCodeFamily
 import com.astune.core.ui.design.ssh.MCSshTheme
-import com.astune.sshclient.fake.getTopContent
+import com.astune.model.ssh.CustomKey
+import com.astune.model.ssh.CustomKeyLists
+import com.astune.sshclient.fake.getContent
 
 @Composable
 fun SshClientPanel(
@@ -96,7 +96,7 @@ fun SshCilent(
         SshClientHeader(
             user, delay, onExit
         )
-        Box(){
+        Box{
             SshClientContent(
                 text = displayText,
                 onEdit = onEdit,
@@ -191,7 +191,7 @@ fun SshClientContent(
                            },
         color = Color.Transparent,
     ) {
-        val dummyInput = TextFieldValue("          ", selection = TextRange(1))
+        val dummyInput = TextFieldValue("          \n", selection = TextRange(1))
         val focusRequester = remember{ FocusRequester() }
         var onInput by remember { mutableStateOf(false) }
         var fontWidth = 0
@@ -200,8 +200,8 @@ fun SshClientContent(
             BasicTextField(
                 modifier = Modifier
                     .onGloballyPositioned {
-                        fontWidth = it.size.width / 10
-                        fontHeight = it.size.height
+                        fontWidth = it.size.width / 9
+                        fontHeight = it.size.height / 2
                     }
                     .focusRequester(focusRequester),
                 value = dummyInput,
@@ -214,7 +214,7 @@ fun SshClientContent(
                         onEdit((8).toChar())
                     }
                 },
-                textStyle = TextStyle(fontFamily = firaCodeFamily, fontSize = 15.sp, lineHeight = 20.sp),
+                textStyle = TextStyle(fontFamily = firaCodeFamily, fontSize = 15.sp, lineHeight = 15.sp),
                 cursorBrush = Brush.horizontalGradient(colors = listOf(Color.Transparent, Color.Transparent))
             )
         }
@@ -223,7 +223,7 @@ fun SshClientContent(
                 modifier = Modifier.
                 fillMaxSize().
                 onGloballyPositioned {
-                    val width = it.size.width / fontWidth
+                    val width = it.size.width / fontWidth - 3
                     val height = it.size.height / fontHeight
                     onWindowsSizeChanged(IntSize(width, height))
                 },
@@ -279,7 +279,7 @@ fun SSHClientPreview(){
         theme = SshThemes.black
     ){
         SshCilent(
-            displayText = getTopContent().toAnnotatedString(),
+            displayText = getContent().toAnnotatedString(),
             isLoading = false
         )
     }

@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.ThemePreview
+import com.astune.model.ssh.CustomKey
+import com.astune.model.ssh.CustomKeyLists
 
 @Composable
 fun Key(
@@ -55,7 +57,7 @@ fun CustomKeyColumn(
     backGroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
     keyColor: Color = MaterialTheme.colorScheme.onPrimary,
     textColor: Color = MaterialTheme.colorScheme.primary,
-    onKeyClicked: (CustomKey, Boolean) -> Boolean = {_,_->true},
+    onKeyClicked: (CustomKey, Boolean) -> Boolean = { _, _->true},
     ){
     Surface(
         modifier = modifier.fillMaxWidth(),

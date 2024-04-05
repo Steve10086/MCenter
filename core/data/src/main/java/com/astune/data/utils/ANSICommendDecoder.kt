@@ -8,120 +8,190 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import com.astune.model.ShellContent
+import com.astune.model.ssh.Action
+import com.astune.model.ssh.ShellContent
+import com.astune.model.ssh.ShellFunctionParam
+import com.astune.model.ssh.ShellFunctionParam.Companion.NEGATIVE_INF
+import kotlin.math.max
 
-class ANSICommendDecoder (val content: ShellContent){
-    fun decodeCommend(text: String){
-        decode(content, text)
-    }
-}
 
-val regex = "^(\\d+;)*[?\\d+]?(\\d+)?([a-zA-Z])".toRegex()
-
-/**
- * decode ansi terminal codes from the linux server
- *
- * @param content container of result
- * @param text from the shell
- * */
-fun decode(content: ShellContent, text:String){
-    var style = SpanStyle()
-    val size = text.lines().size - 1
-    val lines = text.replace("([^\b])||".toRegex(), "").lines()
-
-    for (p in 0 .. size){
-        var line = lines[p]
-
-        val block = StringBuilder()
-
-        while(line != ""){
-            while(line.isNotEmpty() && line[0] == ''){
-                content.deleteAtPointer()
-                line = line.drop(1)
-            }
-            line = line.dropWhile {c ->
-                if(c != '') {
-                    block.append(c)
-                    true
-                }else{
-                    false
+internal fun decodeEscapeSeries(commend:String):Action?{
+    var params = commend.dropLast(1).split(";").map{
+        return@map if (it == "" || it.contains("?")) 0 else it.toInt()
+    }.toMutableList()
+    val action:Action?
+    when(commend.last()){
+        //color
+        'm' -> {
+            action = Action.CHANGE_STYLE
+            action.param = ShellFunctionParam(params) //reformat
+        }
+        //movement
+        'A' -> {
+            action = Action.MOVE_CURSOR_REVERSE
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params[1] = params[0]
+                    params[0] = 0
                 }
-            }
-
-            block.toString().removeSuffix("\u001B").takeIf { it != "" }?.let {
-                content.insert(rendText(it, style))
-                block.delete(0, block.length)
-            }
-
-
-            if(line.startsWith("\u001B[")){
-                line = line.drop(2)
-                regex.find(line)?.let {
-                    val params = ShellFunctionParam(it.value.dropLast(1).split(";").map{
-                        return@map if (it == "" || it.contains("?")) 0 else it.toInt()
-                    }) //reformat
-                    line = line.removePrefix(it.value)
-
-                    params.params += MutableList(5){null}
-
-
-                    //execute function
-                    when(it.value.last()){
-                        //color
-                        'm' -> {
-                            ANSIToStyle(params).also { result ->
-                                style = if (result != SpanStyle()){
-                                    style.merge(result)
-                                }else{
-                                    SpanStyle()
-                                }
-                            }
-                        }
-                        //movement
-                        'A' -> content.movePointer(0, -(params[0]?:1))
-                        'B' -> content.movePointer(0, params[0]?:0)
-                        'C' -> content.movePointer(params[0]?:1, 0)
-                        'D' -> content.movePointer(-(params[0]?:1), 0)
-                        'E' -> {
-                            content.movePointer(0, params[0]?:1)
-                            execMovePointerAbs(content, 0)
-                        }
-                        'F' -> {
-                            content.movePointer(0, -(params[0]?:1))
-                            execMovePointerAbs(content, 0)
-                        }
-                        'f','G' -> execMovePointerAbs(content, params[0]?:1)
-                        'H' -> execMovePointerAbs(content, params[1]?:0, params[0]?:0)
-
-                        //deletion
-                        'J' -> execDeleteLine(content, params[0]?:0)
-                        'K' -> execDelete(content, params[0]?:0)
-                        //scroll
-                        'r' -> content.moveBoundsAbs(params[0], params[1])
-                        'S' -> execScroll(content, -(params[0]?:1))
-                        'T' -> execScroll(content, params[0]?:1)
-                        //pointer
-                        's' -> content.storePointer()
-                        'u' -> content.restorePointer()
-
-                        else -> {}
+            )
+        }
+        'B' -> {
+            action = Action.MOVE_CURSOR
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params = params.padEnd(2, 0)
+                    params[1] = params[0]
+                    params[0] = 0
+                }
+            )
+        }
+        'C' -> {
+            action = Action.MOVE_CURSOR
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params = params.padEnd(2, 0)
+                    params[1] = 0
+                    params[0] = params[0].takeIf { it != 0 } ?:1
+                }
+            )
+        }
+        'D' -> {
+            action = Action.MOVE_CURSOR_REVERSE
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params = params.padEnd(2, 0)
+                    params[1] = 0
+                    params[0] = -(params[0].takeIf { it != 0 } ?:1)
+                }
+            )
+        }
+        'E' -> {
+            action = Action.MOVE_CURSOR
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params[0] = NEGATIVE_INF
+                    params[1] = params[0].takeIf { it != 0 } ?:1
+                }
+            )
+        }
+        'F' -> {
+            action = Action.MOVE_CURSOR_REVERSE
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params = params.apply{
+                    params[0] = NEGATIVE_INF
+                    params[1] = params[0].takeIf { it != 0 } ?:1
+                }
+            )
+        }
+        'f','G' -> {
+            action = Action.MOVE_CURSOR_ABS
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params[0] -= 1
+                    params[1] = NEGATIVE_INF
+                }
+            )
+        }
+        'H' -> {
+            action = Action.MOVE_CURSOR_ABS
+            params = params.padEnd(2, 0)
+            action.param = ShellFunctionParam(
+                params = params.apply {
+                    with(params[0]){
+                        params[0] = params[1] - 1
+                        params[1] = this.zeroOrMinusOne()
                     }
+
                 }
+            )
+        }
+
+        //deletion
+        'J' -> {
+            action = Action.DELETE_LINE
+            action.param = ShellFunctionParam(
+                params.padEnd(1, 0)
+            )
+        }
+        'K' -> {
+            action = Action.DELETE
+            action.param = ShellFunctionParam(
+                params.padEnd(1, 0)
+            )
+        }
+        //scroll
+        'r' -> {
+            action = Action.RESTRICT_BOUNDS
+            action.param = ShellFunctionParam(
+                params.padEnd(2, 0)
+            )
+        }
+        'S' -> {
+            action = Action.SCROLL_REVERSE
+            params = params.padEnd(1, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params[0] = params[0].takeIf { it != 0 } ?:1
+                }
+            )
+        }
+        'T' -> {
+            action = Action.SCROLL
+            params = params.padEnd(1, 0)
+            action.param = ShellFunctionParam(
+                params.apply {
+                    params[0] = params[0].takeIf { it != 0 } ?:1
+                }
+            )
+        }
+        //pointer
+        's' -> action = Action.STORE_CURSOR
+        'u' -> action = Action.RESTORE_CURSOR
+        'h' -> {
+            action = if(commend.contains("?")){
+                Action.DEC_MODE_ON
             }else{
-                line = line.drop(1)
+                Action.SET_ECMA_48_MODE
             }
-        }
-        if(p < size){
-            content.insert(AnnotatedString("\n"))
-        }
-    }
 
+            action.param = ShellFunctionParam(
+                mutableListOf(commend.dropLast(1).drop(1).toIntOrNull()?:0)
+            )
+        }
+        'l' -> {
+            action = if(commend.contains("?")){
+                Action.DEC_MODE_OFF
+            }else{
+                Action.SET_ECMA_48_MODE
+            }
 
-    (content.content[0].text == "\n" && content.content.size != 1).let {
-        content.content.drop(1)
+            action.param = ShellFunctionParam(
+                mutableListOf(commend.dropLast(1).drop(1).toIntOrNull()?:0)
+            )
+        }
+        '=' -> action = Action.SET_CURSOR_STATE
+        '>' -> action = Action.SET_CURSOR_STATE
+        else -> action = null
     }
+    return action
 }
 
+internal fun getPureText(text: String):String{
+    val string = StringBuilder()
+    text.dropWhile {
+        string.append(it)
+        it != '\u001b'
+    }
+    return string.removeSuffix("\u001b").toString()
+}
 
 fun execMovePointerAbs(content: ShellContent, x:Int? = null, y:Int? = null){
     content.movePointerAbs(x?.minus(1), y?.zeroOrMinusOne()?.plus(content.bounds.first))
@@ -167,7 +237,7 @@ fun ANSIToStyle(
     style: SpanStyle = SpanStyle()
 ):SpanStyle{
     when (params.size){
-        1 -> return singleParamStyles(params[0]?:0, style)
+        1 -> return singleParamStyles(params[0], style)
         3 -> return tripleParamStyles(params, style)
         5 -> return rgbStyles(params, style)
     }
@@ -197,36 +267,30 @@ fun singleParamStyles(
 }
 
 
-fun tripleParamStyles(
+internal fun tripleParamStyles(
     values:ShellFunctionParam,
     style: SpanStyle
 ): SpanStyle {
-
-    assert(values.size == 3)
-
     return when(values[0]){
-        38 -> style.copy(color = Color(values[2]?:0))
-        48 -> style.copy(background = Color(values[2]?:0))
+        38 -> style.copy(color = Color(values[2]))
+        48 -> style.copy(background = Color(values[2]))
         else -> {style}
     }
 }
 
-fun rgbStyles(
+internal fun rgbStyles(
     values:ShellFunctionParam,
     style: SpanStyle
 ): SpanStyle{
-
-    assert(values.size == 5)
-
     return when(values[0]){
-        38 -> style.copy(color = Color(values[2]?:0,values[3]?:0,values[4]?:0))
-        48 -> style.copy(background = Color(values[2]?:0,values[3]?:0,values[4]?:0))
+        38 -> style.copy(color = Color(values[2],values[3],values[4]))
+        48 -> style.copy(background = Color(values[2],values[3],values[4]))
         else -> {style}
     }
 }
 
 //default colors in shell
-fun colorPlate(color:Int): Color {
+internal fun colorPlate(color:Int): Color {
     return when (color){
         0 -> Color.Black
         1 -> Color.Red
@@ -245,22 +309,5 @@ operator fun Color.plus(color: Color):Color {
 
 private fun Int.zeroOrMinusOne() = if(this == 0){ 0 }else{this - 1}
 
-/**
- * function param structure
- * */
-data class ShellFunctionParam(
-    var params:MutableList<Int?>,
-    var size:Int = params.size
-
-){
-    fun changeSize(size:Int){
-        this.size = size
-    }
-
-    operator fun get(i: Int): Int? {
-        return params[i]
-    }
-}
-fun ShellFunctionParam(params: List<Int?>): ShellFunctionParam {
-    return ShellFunctionParam(params = params.toMutableList())
-}
+private fun <T> MutableList<T>.padEnd(newEnd:Int, v:T) =
+    this.addAll(List(max(newEnd - this.size, 0)) { v }).let { this }

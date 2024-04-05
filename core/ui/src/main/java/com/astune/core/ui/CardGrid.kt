@@ -135,7 +135,7 @@ fun LinkCardGrid(modifier: Modifier = Modifier,
         , verticalArrangement = Arrangement.spacedBy(30.dp),
         horizontalArrangement = Arrangement.spacedBy(30.dp),
         columns = GridCells.Adaptive(80.dp)){
-        items(cardList,key = {it.id}){ card ->
+        items(cardList, key = {"${it.type}/${it.id}"}){ card ->
             var globalPosition by remember { mutableStateOf(Offset.Zero) }
             Row(modifier = Modifier.onGloballyPositioned {
                 globalPosition = it.positionInParent()

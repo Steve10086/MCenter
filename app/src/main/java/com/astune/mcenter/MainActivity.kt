@@ -1,6 +1,7 @@
 package com.astune.mcenter
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -71,17 +72,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
+
+    override fun onPause() {
+        super.onPause()
         syncManager.stopPing()
+        Log.d("Main", "Sync paused")
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         lifecycleScope.launch {
             viewModel.device.collect() {
                 syncManager.pingSync(it.getIp())
             }
+            Log.d("Main", "Sync start")
         }
     }
 

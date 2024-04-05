@@ -1,4 +1,4 @@
-package com.astune.model
+package com.astune.model.ssh
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -15,13 +15,11 @@ class ShellContent(
 ) {
 
     var bounds = Pair(0, windowsHeight)
-        private set
 
     var content = content
         private set
 
     var pointer = defaultPointer()
-        private set
 
     fun currentLineLength() = content[pointer.second].length - 1
 
@@ -62,7 +60,6 @@ class ShellContent(
         pointer = Pair(newX, newY)
         bounds = defaultBounds()
         content.padEnd(pointer)
-
     }
 
     fun moveBoundsAbs(up: Int?, down: Int?) {
@@ -77,9 +74,14 @@ class ShellContent(
      * delete content within the giving range
      * */
     fun delete(range: IntRange) {
-        content.removeAll(content.filterIndexed { index, _ ->
-            index in range
-        })
+        for(index in range){
+            if(index <= content.lastIndex){
+                content[index] = AnnotatedString("")
+            }else{
+                continue
+            }
+        }
+
         movePointer(0, - (pointer.second - range.first).positiveOrZero())
         if(content.isEmpty()) content += AnnotatedString("")
     }
@@ -110,10 +112,12 @@ class ShellContent(
         }?.let {
             content[index] = it
             if (pointer.second == index) {
-                movePointer(-(oldLength - currentLineLength()), 0) // move the pointer to follow the edited text
+                movePointer(-(oldLength - content[index].length), 0) // move the pointer to follow the edited text
             }
             return
         }
+        content[index] = AnnotatedString("")
+        movePointerAbs(x = -1)
     }
 
     /**
@@ -166,10 +170,18 @@ class ShellContent(
         if(pointer == defaultPointer()){
             this += lines.cleanStyles()
         }else{
+            var offset = 0
             //if pointer is not at end, replace anything with new input
             lines.lines().also {
                 it.forEachIndexed { index, line ->
-                    val temporaryLine = AnnotatedString(line, lines.spanStyles)
+
+                    val spanStyles = lines.spanStyles.filter {
+                        it.start <= offset && offset < it.end
+                    }.map{
+                        AnnotatedString.Range(it.item, 0, line.length)
+                    }
+
+                    val temporaryLine = AnnotatedString(line, spanStyles)
 
                     if(content[pointer.second].isEmpty()){
                         content[pointer.second] = temporaryLine.cleanStyles()
@@ -196,6 +208,8 @@ class ShellContent(
                     }else{
                         movePointer(temporaryLine.length, 0)
                     }
+
+                    offset += line.length + 1
                 }
             }
         }
@@ -221,7 +235,7 @@ class ShellContent(
     }
 
 
-    private operator fun plusAssign(lines: List<AnnotatedString>) {
+    operator fun plusAssign(lines: List<AnnotatedString>) {
         lines.onEach { line ->
             content += line
         }
@@ -229,9 +243,8 @@ class ShellContent(
         bounds = defaultBounds()
     }
 
-    private operator fun plusAssign(lines: AnnotatedString) {
+    operator fun plusAssign(lines: AnnotatedString) {
         lines.lines().also {
-
             content[currentContentSize()] += AnnotatedString(it[0], lines.spanStyles)
 
             for (line in it.drop(1)) {
@@ -251,7 +264,6 @@ private fun Int.positiveOrZero() =
         this
     }
 
-
 /**
  * padding vertically with empty annotatedString,
  * then padding horizontally with space
@@ -266,9 +278,10 @@ private fun MutableList<AnnotatedString>.padEnd(newEnd: Pair<Int, Int>) {
         }
     }
     if (this[newY].length <= newX) {
-        this[newY] += AnnotatedString("\u3000".repeat(max(newX - this[newY].lastIndex, 0)))//horizontally padding
+        this[newY] += AnnotatedString(" ".repeat(max(newX - this[newY].lastIndex, 0)))//horizontally padding
     }
 }
+
 
 /**
  * return a new AnnotatedString with all empty or zero length styles removed
@@ -284,4 +297,4 @@ fun AnnotatedString.cleanStyles() = buildAnnotatedString {
 
 val EmptyStyle = SpanStyle()
 
-val PointerStyle = SpanStyle(background = Color.LightGray)
+val PointerStyle = SpanStyle(background = Color(225, 225, 225, 75))

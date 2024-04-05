@@ -1,4 +1,4 @@
-package com.astune.core.ui
+package com.astune.model.ssh
 
 
 enum class CustomKey(
@@ -45,6 +45,11 @@ enum class CustomKey(
         id = "right",
         text = "▶"
     ),
+
+    TestRight(
+        id = "test",
+        text = ">"
+    )
 }
 
 enum class CustomKeyLists(
@@ -60,7 +65,8 @@ enum class CustomKeyLists(
             CustomKey.Up,
             CustomKey.Down,
             CustomKey.Left,
-            CustomKey.Right
+            CustomKey.Right,
+            CustomKey.TestRight,
         )
     )
 }

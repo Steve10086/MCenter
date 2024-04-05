@@ -12,15 +12,14 @@ import androidx.lifecycle.viewModelScope
 import com.astune.core.network.`object`.SshConnection
 import com.astune.core.network.repository.NetWorkRepository
 import com.astune.core.network.repository.SSHRepository
-import com.astune.core.ui.CustomKey
-import com.astune.core.ui.CustomKey.*
 import com.astune.core.ui.design.SshThemes
 import com.astune.data.respository.LinkDataRepository
+import com.astune.data.respository.ShellContentRepository
 import com.astune.data.respository.UserDataRepository
-import com.astune.data.utils.ANSICommendDecoder
 import com.astune.database.SSHLink
 import com.astune.model.LinkType
-import com.astune.model.ShellContent
+import com.astune.model.ssh.CustomKey
+import com.astune.model.ssh.ShellContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -33,6 +32,7 @@ class SshViewModel @Inject constructor(
     private val netWorkRepository: NetWorkRepository,
     private val userDataRepository: UserDataRepository,
     private val linkDataRepository: LinkDataRepository,
+    private val shellContentRepository: ShellContentRepository,
     savedStateHandle: SavedStateHandle,
 ):ViewModel(){
     var onException by mutableStateOf(false)
@@ -69,8 +69,7 @@ class SshViewModel @Inject constructor(
     }
 
     var isLoading by mutableStateOf(true)
-    private var content:ShellContent by mutableStateOf(ShellContent())
-    private val decoder = ANSICommendDecoder(content)
+    private var content: ShellContent by mutableStateOf(ShellContent())
     var displayText:AnnotatedString by mutableStateOf(AnnotatedString(""))
     private var windowSize:Size? = null
     private var keyState:MutableMap<CustomKey, Boolean> = mutableMapOf()
@@ -110,7 +109,7 @@ class SshViewModel @Inject constructor(
                     .flowOn(Dispatchers.IO)
                     .collect(){
                         Log.d("SSHVM", it)
-                        decoder.decodeCommend(it)
+                        shellContentRepository.decode(content, it)
                         displayText = content.toAnnotatedString()
                     }
             }
@@ -148,20 +147,19 @@ class SshViewModel @Inject constructor(
         return theme
     }
 
-    fun send(char: Char?){
+    fun send(char: Char){
         connection?.let {
-            char?.let {c ->
-                val fChar = getCompositeChar(c)
-                viewModelScope.launch {
-                    if (!sshRepository.send(fChar.toString().toByteArray() , it.shell)){
-                        isLoading = true
-                    }
+            val fChar = shellContentRepository.processKey(char)
+            viewModelScope.launch {
+                Log.d("SSHVM", "send a $fChar")
+                if (!sshRepository.send(fChar , it.shell)){
+                    isLoading = true
                 }
             }
         }
     }
 
-    fun sendArray(array: ByteArray){
+    private fun sendArray(array: ByteArray){
         connection?.let {
             viewModelScope.launch {
                 if(!sshRepository.send(array, it.shell)){
@@ -172,20 +170,12 @@ class SshViewModel @Inject constructor(
     }
 
     fun onKeyClicked(name: CustomKey, oldState:Boolean):Boolean{
-        when(name){
-            Ctrl -> {
-                keyState[name] = !oldState
-                return !oldState
-            }
-            Esc -> send((27).toChar())
-            Tab -> send((9).toChar())
-            Alt -> sendArray("\u001B[".toByteArray())
-            Up -> sendArray("\u001B[A".toByteArray())
-            Down -> sendArray("\u001B[B".toByteArray())
-            Left -> sendArray("\u001B[D".toByteArray())
-            Right -> sendArray("\u001B[C".toByteArray())
+        val result = shellContentRepository.processExtraKey(name)
+        result?.let {
+            sendArray(it)
+            return false
         }
-        return false
+        return !oldState
     }
 
     fun stop(){
@@ -196,27 +186,4 @@ class SshViewModel @Inject constructor(
             }
         }
     }
-
-    fun getCompositeChar(char: Char): Char {
-        if(keyState[Ctrl] == true){
-            return when(char){
-                'c' -> (3).toChar() //EOT
-                'd' -> (4).toChar() //EOF
-                'z' -> (26).toChar()//Substitute
-                'l' -> (12).toChar()//ClearScreen
-                'u' -> (21).toChar()//Delete line
-                'w' -> (23).toChar()//Delete word
-                'r' -> (18).toChar()//Search history
-                'a' -> (1).toChar() //Move to start
-                'e' -> (5).toChar() //Move to end
-                'k' -> (11).toChar()//Delete from cursor to end
-                'y' -> (25).toChar()//Restore
-                't' -> (20).toChar()//Swap last two letter
-                else -> char
-            }
-        }
-        return char
-    }
-
-
 }
