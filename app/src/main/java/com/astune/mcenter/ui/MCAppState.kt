@@ -12,22 +12,19 @@ import com.astune.core.ui.TitleBarValues
 
 @Composable
 fun rememberMCAppState(
-    navHostController: NavHostController = rememberNavController()
+    navHostController: NavHostController = rememberNavController(),
 ):MCAppState = remember(
-    navHostController
+    navHostController,
 ){ MCAppState(
-    navHostController = navHostController
+    navHostController = navHostController,
 ) }
 
 @Stable
-class MCAppState(
+class MCAppState (
     val navHostController: NavHostController,
 ) {
-
     val currentDestination: NavDestination?
         @Composable get() = navHostController.currentBackStackEntryAsState().value?.destination
-
-
 
     fun getTitleBarValues(route: String?):TitleBarValues =
         when(route){

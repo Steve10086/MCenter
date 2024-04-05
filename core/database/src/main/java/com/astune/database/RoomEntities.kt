@@ -18,10 +18,11 @@ data class Device(
 
     @ColumnInfo (name = "ip") var ip: String,
 
-    @ColumnInfo (name = "last_online") var lastOnline: String?
+    @ColumnInfo (name = "last_online") var lastOnline: String? = null,
 
+    @ColumnInfo (name = "last_delay") var latestDelay: String? = null,
 
-) {
+    ) {
     @get:Ignore
     var delay by mutableStateOf("")
 
@@ -29,7 +30,7 @@ data class Device(
     var loading by mutableStateOf(false)
 
     override fun toString(): String {
-        return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline], deLay: $delay")
+        return ("[id: $id, name: $name, ip: $ip, lastOnline: $lastOnline, latestDelay: $latestDelay], deLay: $delay")
     }
 
 }
@@ -52,7 +53,7 @@ data class WebLink(
 
     @ColumnInfo override val parent: Int,
 
-    @ColumnInfo(name = "address")override val info: String,
+    @ColumnInfo(name = "port")override val info: String,
 ) : Link {
     @Ignore
     override val type: LinkType = LinkType.WEB_LINK
@@ -60,15 +61,19 @@ data class WebLink(
 
 @Entity
 data class SSHLink(
-
     @PrimaryKey(autoGenerate = true) override val id:Int,
 
     @ColumnInfo override val name: String,
 
     @ColumnInfo override val parent: Int,
 
-    @ColumnInfo(name = "address")override val info: String,
-) : Link {
+    @ColumnInfo(name = "port")override val info: String,
+
+    @ColumnInfo val password: String,
+
+    @ColumnInfo val username: String,
+
+    ) : Link {
     @Ignore
     override val type: LinkType = LinkType.SSH_LINK
 }

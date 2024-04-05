@@ -21,5 +21,8 @@ class DataBaseModule {
         context,
         MCenterDB::class.java,
         "MCenterDB"
+    ).addMigrations(
+        DatabaseMigration.MIGRATION_1_2,
+        DatabaseMigration.MIGRATION_2_3
     ).build()
 }

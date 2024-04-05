@@ -30,8 +30,7 @@ fun WebLinkPage(
 ){
     WebViewScreen(
         uri = uri,
-        onCreate = { initSetting(it)
-                   },
+        onCreate = { initSetting(it) },
         onExit = onExit
     )
 }
@@ -51,18 +50,6 @@ fun WebViewScreen(
         var titleText by remember { mutableStateOf("Loading...$progress%") }
 
         Column {
-
-            val chromeClient = object : AccompanistWebChromeClient() {
-                override fun onProgressChanged(view: WebView?, newProgress: Int) { // bind the loading progressBar
-                    Log.i("webPage", "Loading...${newProgress}")
-                    progress = newProgress / 100f
-                }
-                override fun onReceivedTitle(view: WebView?, title: String?) { // bind the web title
-                    super.onReceivedTitle(view, title)
-                    Log.i("webPage",title.toString())
-                    titleText = title?:"Loading"
-                }
-            }
 
             Surface(modifier = Modifier.height(60.dp).fillMaxWidth(),
                 color = MaterialTheme.colorScheme.inverseOnSurface) {
@@ -112,6 +99,18 @@ fun WebViewScreen(
             }
 
             Box(){
+                val chromeClient = object : AccompanistWebChromeClient() {
+                    override fun onProgressChanged(view: WebView?, newProgress: Int) { // bind the loading progressBar
+                        Log.i("webPage", "Loading...${newProgress}")
+                        progress = newProgress / 100f
+                    }
+                    override fun onReceivedTitle(view: WebView?, title: String?) { // bind the web title
+                        super.onReceivedTitle(view, title)
+                        Log.i("webPage",title.toString())
+                        titleText = title?:"Loading"
+                    }
+                }
+
                 WebView(
                     modifier = Modifier.fillMaxSize(),
                     captureBackPresses = true,

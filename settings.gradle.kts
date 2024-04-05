@@ -15,17 +15,17 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MCenter"
-include (":app")
-include (":core:ui")
-include (":core:database")
-include (":core:model")
-include (":core:data")
-include (":core:common")
-include("core:datastore")
-include("core:network")
-include("core:sync")
+include(":app")
+include(":core:ui")
+include(":core:database")
+include(":core:model")
+include(":core:data")
+include(":core:common")
+include(":core:datastore")
+include(":core:network")
+include(":core:sync")
 
-include (":feature:device")
-include("feature:setting")
-include("feature:link")
-
+include(":feature:device")
+include(":feature:setting")
+include(":feature:link")
+include(":feature:sshclient")

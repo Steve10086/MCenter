@@ -15,11 +15,11 @@ fun getTimeBetween(startTime:Instant):String{
     val month = timeBetween.subSequence(5, 7).toString().toInt() - 1
     val year = timeBetween.subSequence(0, 4).toString().toInt() - 1970
     val result:StringBuilder = java.lang.StringBuilder()
-    year.takeIf { it > 0 }.let { result.append("$it years ") }
-    month.takeIf { it > 0 }.let { result.append("$it months ") }
-    day.takeIf { it > 0 }.let { result.append("$it days ") }
-    hour.takeIf { it > 0 }.let {result.append("$it hours ") }
-    min.takeIf { it > 0 || result.isBlank() }.let { result.append("$it mins ") }
+    year.takeIf { it > 0}?.let { result.append("$it years ") }
+    month.takeIf { it > 0}?.let { result.append("$it months ") }
+    day.takeIf { it > 0}?.let { result.append("$it days ") }
+    hour.takeIf { it > 0}?.let {result.append("$it hours ") }
+    min.takeIf { it > 0 || result.isBlank()}?.let { result.append("$it mins ") }
     result.append("ago")
     return result.toString()
 }

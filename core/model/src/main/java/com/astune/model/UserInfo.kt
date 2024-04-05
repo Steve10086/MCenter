@@ -8,5 +8,6 @@ class UserInfo(
     var enabledZerotier : Boolean = false,
     var zerotierPass : String = "",
     var theme : String = "",
+    var sshTheme : String = "",
     var avatar : Bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
 )

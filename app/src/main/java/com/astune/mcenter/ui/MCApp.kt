@@ -1,17 +1,14 @@
 package com.astune.mcenter.ui
 
-import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,12 +28,11 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import com.astune.core.ui.*
-import com.astune.core.ui.design.MCenterTheme
 import com.astune.mcenter.R
 import com.astune.mcenter.navigation.McNavHost
 import com.astune.mcenter.navigation.TopLevelRoute
@@ -70,7 +66,6 @@ internal fun McBackground(
     content: @Composable () -> Unit = {},
 ){
 
-
     var screenSize by remember { mutableStateOf(Size.Zero) }
 
     var isSideBar by remember { mutableStateOf(false) }
@@ -85,8 +80,105 @@ internal fun McBackground(
         isSideBar = false
     }
 
-    Column{
-        if(mcAppState.currentDestination?.route in TopLevelRoute.nameList()){
+    Box(){
+        // content
+        Column {
+            Box{
+                var position by remember { mutableStateOf(Offset.Zero) }
+                var background by remember { mutableStateOf(ImageBitmap(1, 1)) }
+
+                CaptureBitmap(
+                    key = mcAppState.currentDestination?.route == "device",
+                    onBitmapCaptured = {
+                        background = it.asImageBitmap()
+                        //Log.i("Background", "getBitmap")
+                    },
+                ){
+                    Image(
+                        modifier = Modifier
+                            .onSizeChanged { screenSize = it.toSize() }
+                            .fillMaxSize(),
+                        painter = painterResource(R.drawable.background),
+                        contentDescription = null,
+                        contentScale = ContentScale.FillHeight)
+
+                    Box(modifier =
+                    Modifier.background(
+                        brush = Brush.verticalGradient(
+                            listOf(MaterialTheme.colorScheme.inverseOnSurface,
+                                Color.Transparent, Color.Transparent)
+                        )).fillMaxSize()){
+                    }
+                }
+
+                Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { position = it.positionInRoot() }
+                ){
+
+                    val offset by animateDpAsState(
+                        targetValue = if(!isSideBar) 0.dp else with(LocalDensity.current){ (screenSize.width / 2).toDp()},
+                        label = "slide out")
+
+                    Box(modifier = Modifier.offset(offset)){
+                        CompositionLocalProvider(
+                            LocalRootUIState provides uiState.merge(
+                                UIState(
+                                    background = background,
+                                    screenSize = screenSize,
+                                    positionInRoot = position)
+                            )
+                        ){
+                            content()
+                        }
+                    }
+
+                    BackHandler(isSideBar){
+                        isSideBar = false
+                    }
+
+                    Box {
+                        if(isSideBar) {
+                            userInfo = onCaptureUserInfo.invoke()
+
+                            Box(
+                                modifier = Modifier.alpha(0.1f).fillMaxSize().background(brush = Brush.verticalGradient(
+                                    listOf(Color.Transparent, Color.Black)
+                                )).clickable {
+                                    isSideBar = false
+                                }) {
+                            }
+                        }
+
+                        Column {
+                            AnimatedVisibility(
+                                visible = isSideBar,
+                                enter = expandHorizontally(),
+                                exit = shrinkHorizontally()
+                            ){
+                                SideBar(
+                                    offset = position,
+                                    background = background,
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.5F),
+                                    scrSize = screenSize,
+                                    userInfo = userInfo)
+                            }
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = mcAppState.currentDestination?.route in TopLevelRoute.nameList(),
+            enter = slideIn{
+                IntOffset(0, -it.height)
+            },
+            exit = slideOut {
+                IntOffset(0, -it.height)
+            },
+        ){
             ButtonTitlebar(
                 modifier = Modifier,
                 titleBarValues = if(isSideBar)
@@ -105,100 +197,12 @@ internal fun McBackground(
                         }
                     }
 
-                                   },
+                },
                 onRightBtnClicked = {
                     uiState.rightBtnClicked.invoke()
-
                     des?.let { mcAppState.onRightBtnClicked(it) }
                 }
             )
-        }
-
-        Box{
-            var position by remember { mutableStateOf(Offset.Zero) }
-            var background by remember { mutableStateOf(ImageBitmap(1, 1)) }
-
-            CaptureBitmap(
-                key = mcAppState.currentDestination?.route == "device",
-                onBitmapCaptured = {
-                        background = it.asImageBitmap()
-                        //Log.i("Background", "getBitmap")
-                                       },
-            ){
-                    Image(
-                        modifier = Modifier
-                            .onSizeChanged { screenSize = it.toSize() }
-                            .fillMaxSize(),
-                        painter = painterResource(R.drawable.background),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillHeight)
-
-                    Box(modifier =
-                    Modifier.background(
-                        brush = Brush.verticalGradient(
-                            listOf(MaterialTheme.colorScheme.inverseOnSurface,
-                                Color.Transparent, Color.Transparent)
-                    )).fillMaxSize()){
-                    }
-               }
-
-            Box(modifier = Modifier.fillMaxSize().onGloballyPositioned {
-                    position = it.positionInRoot()
-                }){
-
-                val offset by animateDpAsState(
-                    targetValue = if(!isSideBar) 0.dp else with(LocalDensity.current){ (screenSize.width / 2).toDp()},
-                    label = "slide out")
-
-                Box(modifier = Modifier.offset(offset)){
-                    CompositionLocalProvider(
-                        LocalRootUIState provides uiState.merge(
-                            UIState(
-                                background = background,
-                                screenSize = screenSize,
-                                positionInRoot = position)
-                        )
-                    ){
-                        content()
-                    }
-                }
-
-                BackHandler(isSideBar){
-                    isSideBar = false
-                }
-
-                Box {
-                    if(isSideBar) {
-                        userInfo = onCaptureUserInfo.invoke()
-
-                        Box(
-                            modifier = Modifier.alpha(0.1f).fillMaxSize().background(brush = Brush.verticalGradient(
-                                listOf(Color.Transparent, Color.Black)
-                            )).clickable {
-                                isSideBar = false
-                            }) {
-                        }
-                    }
-
-                    Column {
-                        AnimatedVisibility(
-                            visible = isSideBar,
-                            enter = expandHorizontally(),
-                            exit = shrinkHorizontally()
-                        ){
-                            SideBar(
-                                offset = position,
-                                background = background,
-                                modifier = Modifier
-                                    .fillMaxWidth(0.5F),
-                                scrSize = screenSize,
-                                userInfo = userInfo)
-                        }
-                    }
-
-                }
-
-                }
         }
     }
 }
@@ -227,6 +231,7 @@ internal fun SideBar(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                TitleBarSpacer()
                 Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.height(130.dp).fillMaxWidth()){
                     Image(bitmap = userInfo.avatar.asImageBitmap(), "", modifier = Modifier.size(100.dp, 100.dp))
                 }
@@ -255,15 +260,5 @@ fun SideBarPreview(){
                 email = "test@gmail.com"
             )
         )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark theme")
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO, name = "Light theme")
-@Composable
-fun BackgroundPreview(){
-    MCenterTheme {
-        McBackground(onCaptureUserInfo = { UserInfo() }, mcAppState = MCAppState(rememberNavController())){
-        }
     }
 }

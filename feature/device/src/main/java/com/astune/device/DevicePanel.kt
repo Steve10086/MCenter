@@ -1,13 +1,16 @@
 package com.astune.device
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
@@ -18,6 +21,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.astune.core.ui.DeviceCardList
 import com.astune.core.ui.LocalRootUIState
+import com.astune.core.ui.design.LoadingAnimation
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.TextCompat
 import com.astune.core.ui.design.ThemePreview
@@ -28,24 +32,21 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DevicePanel(
-    modifier: Modifier = Modifier,
     deviceViewModel: DeviceViewModel = hiltViewModel(),
     onNavigateToLink: (String) -> Unit,
 ){
-    DisposableEffect(Unit) {
-        onDispose {
-            deviceViewModel.stopPing()
-        }
-    }
+    val devices = deviceViewModel.deviceFlow.collectAsState().value
 
     DeviceScreen(
-        modifier = modifier,
-        deviceList = deviceViewModel.devices,
+        deviceList = devices,
         onDeviceCardBtnClicked = { device ->  onNavigateToLink(device.id.toString())},
         deleteDevice = { device ->  deviceViewModel.delete(device) },
         insertDevice = { device ->  deviceViewModel.insert(device) },
         editDevice = { device ->  deviceViewModel.insert(device) },
-        onRefresh = { deviceViewModel.getDelay() }
+        onRefresh = {
+            deviceViewModel.ping(devices.getIp())
+            Log.i("Device", "refreshed")
+        }
     )
 
 }
@@ -54,7 +55,6 @@ fun DevicePanel(
 
 @Composable
 internal fun DeviceScreen(
-    modifier: Modifier,
     deviceList: List<Device>,
     onDeviceCardBtnClicked: (Device) -> Unit = {},
     onRefresh: () -> Unit = {},
@@ -62,7 +62,6 @@ internal fun DeviceScreen(
     editDevice: (Device) -> Unit = {},
     insertDevice: (Device) -> Unit = {},
     ) {
-
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showInsertDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -74,10 +73,7 @@ internal fun DeviceScreen(
         showInsertDialog = true
     }
 
-
-
-    Box(modifier = modifier, contentAlignment = Alignment.TopCenter) {
-
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         var expended by remember { mutableStateOf(false) }
 
         Box(
@@ -207,7 +203,9 @@ fun DeviceSetting(
             TextCompat(
                 titleText = "Name: ",
                 value = name,
-                onValueChange = {name = it}
+                onValueChange = {
+                    name = it
+                }
             )
             TextCompat(
                 titleText = "Address: ",
@@ -255,7 +253,7 @@ internal fun PanelPreview(){
         deviceList.add(Device(0, "testdevice", "null", null))
     }
     MCenterTheme {
-        DeviceScreen(modifier = Modifier.fillMaxSize(), deviceList)
+        DeviceScreen(deviceList)
     }
 }
 

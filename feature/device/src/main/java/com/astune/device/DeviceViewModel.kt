@@ -1,17 +1,17 @@
 package com.astune.device
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
 import com.astune.core.sync.MCWorkManager.SyncManager
 import com.astune.data.respository.DeviceDataRepository
+import com.astune.data.respository.LinkDataRepository
 import com.astune.data.utils.getTimeBetween
 import com.astune.database.Device
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
@@ -20,82 +20,98 @@ import javax.inject.Inject
 @HiltViewModel
 class DeviceViewModel @Inject constructor(
     private val deviceDataRepository: DeviceDataRepository,
+    private val linkDataRepository: LinkDataRepository,
     private val syncManager: SyncManager
 ): ViewModel() {
-    var devices by mutableStateOf(emptyList<Device>())
-    private var refresh by mutableStateOf(false)
+    var deviceFlow = MutableStateFlow(emptyList<Device>())
+    private var refreshing = false
+    private val pingDisPatchers = Dispatchers.IO
 
     init{
-        Log.i("deviceVM", "instanced!")
         getDeviceList()
     }
 
     private fun getDeviceList(){
-        viewModelScope.launch{
+        viewModelScope.launch(pingDisPatchers){
             deviceDataRepository.getDeviceList().collect{ value ->
-                devices = value
+                deviceFlow.value = value
                 getDelay()
             }
         }
     }
 
-    fun getDelay(){
-        if(!refresh && devices.isNotEmpty()){
-            devices.setLoading(true)
-            viewModelScope.launch {
-                refresh = true
-               // Log.i("DeviceVM", "refreshing")
-                syncManager.pingSync(devices.getIp()).stateIn(viewModelScope).collect(){
-                    val resultMap = it.progress.keyValueMap
-                    if (resultMap.isNotEmpty()){
-                        //Log.i("DeviceVM", resultMap.toString())
-                        for(device in devices){
-                            val delay = it.progress.getDouble(device.ip, (-2).toDouble()).toInt()
-                            if(delay == -2){
-                                continue
-                            } else if (delay > -1){
+
+    fun ping(ips:List<String>){
+        Log.i("DeviceVM", ips.toString())
+        syncManager.pingSync(ips)
+    }
+
+    fun getDelay(devices: List<Device> = deviceFlow.value){
+        if(!refreshing && devices.isNotEmpty()){
+            viewModelScope.launch(pingDisPatchers) {
+                refreshing = true
+                syncManager.getLastPing().collect(){
+                    //Log.i("DeviceVM", "getting Delay!")
+                    devices.setLoading(true)
+                    for(device in devices){
+                        var delay = "-1"
+
+                        if(it.state == WorkInfo.State.RUNNING){
+                            delay = it.progress.getInt(device.ip, -2).toString()
+                        }else{
+                            deviceDataRepository.getDeviceDelay(device.id).collect{value ->
+                                if(value != null) delay = value
+                            }
+                        }
+
+                        when(delay.toInt()){
+                            -2 -> continue
+
+                            -1 -> {
+                                if(device.lastOnline == null){
+                                    device.delay = "offline"
+                                }else{
+                                    device.delay = getTimeBetween(
+                                        Instant.parse(device.lastOnline)
+                                    )
+                                }
+                            }
+
+                            else -> {
                                 device.delay = "$delay ms"
                                 device.lastOnline = Instant.now().toString()
-                            }else if (device.lastOnline == null) {
-                                device.delay = "offline"
-                            } else {
-                                device.delay = getTimeBetween(
-                                    Instant.parse(device.lastOnline)
-                                )
                             }
-                            device.loading = false
                         }
-                        refresh = false
-                        //Log.i("DeviceVM", "refreshing ended!")
+                        device.loading = false
                     }
+                    refreshing = false
                 }
             }
         }
     }
 
-    fun stopPing(){
+    fun stopPing(devices: List<Device>){
         devices.setLoading(false)
         syncManager.stopPing()
     }
 
-
     fun delete(device: Device){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             deviceDataRepository.deleteDevice(device)
-            deviceDataRepository.getDeviceList().collect{ value -> devices = value}
+            linkDataRepository.deleteParent(device.id)
+            getDeviceList()
         }
     }
 
     fun insert(device: Device){
         viewModelScope.launch {
             deviceDataRepository.insertDevice(device)
-            deviceDataRepository.getDeviceList().collect{ value -> devices = value }
+            getDeviceList()
         }
     }
-
 }
 
-internal fun List<Device>.getIp():List<String>{
+fun List<Device>.getIp():List<String>{
     return mutableListOf<String>().apply {
         for(device in this@getIp){
             this.add(device.ip)

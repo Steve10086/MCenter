@@ -36,4 +36,4 @@ fun UIState.merge(uiState: UIState):UIState{
     return this
 }
 
-val LocalRootUIState = staticCompositionLocalOf { UIState() }
+val LocalRootUIState = staticCompositionLocalOf { UIState()}

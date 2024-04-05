@@ -18,10 +18,19 @@ class DeviceDataRepository @Inject constructor(
         return flow{emit(deviceDao.getDevice(id))}.flowOn(ioDispatcher)
     }
 
+    fun getDeviceDelay(id:Int): Flow<String>{
+        return flow{emit(deviceDao.getDeviceDelay(id))}.flowOn(ioDispatcher)
+    }
+
     fun getDeviceList(): Flow<List<Device>> {
         return flow {emit(deviceDao.getAll())}.flowOn(ioDispatcher)
     }
 
+    suspend fun updateLatestDelayByIp(ip:String, delay:String){
+        val device = deviceDao.getDevice(ip)
+        device.latestDelay = delay
+        deviceDao.insert(device)
+    }
 
     suspend fun insertDevice(device: Device){
         deviceDao.insert(device)

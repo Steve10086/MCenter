@@ -2,6 +2,7 @@ package com.astune.mcenter
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.astune.data.respository.DeviceDataRepository
 import com.astune.data.respository.UserDataRepository
 import com.astune.model.UserInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,12 +13,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    userDataRepository: UserDataRepository
+    userDataRepository: UserDataRepository,
+    deviceDataRepository: DeviceDataRepository
 ): ViewModel(){
     var userInfo : StateFlow<UserInfo> = userDataRepository.userData.stateIn(
         scope = viewModelScope,
         initialValue = UserInfo(),
         started = SharingStarted.WhileSubscribed(5_000),
     )
+
+    var device = deviceDataRepository.getDeviceList()
 
 }

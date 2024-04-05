@@ -25,6 +25,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.astune.core.ui.design.RoundedCornerRectangleShape
 import com.astune.database.Link.Link
 import com.astune.database.Link.NewLink
+import com.astune.database.SSHLink
 import com.astune.database.WebLink
 import com.astune.model.LinkType.*
 
@@ -107,9 +108,11 @@ fun LinkCard(link: Link,
 @Preview
 @Composable
 fun LinkCardPerview(){
-    val link= WebLink(0, "test",0,  "12345")
-    LinkCard(link, Modifier){_,_->
-        Log.i("Link", link.name + " Clicked")
+    val sshLink = SSHLink(0, "test", 0, "1234", "123", "user")
+    val webLink= WebLink(0, "test",0,  "12345")
+    val newLink = NewLink("test", 0)
+    LinkCard(sshLink, Modifier){_,_->
+        Log.i("Link", webLink.name + " Clicked")
     }
 }
 
@@ -132,7 +135,7 @@ fun LinkCardGrid(modifier: Modifier = Modifier,
         , verticalArrangement = Arrangement.spacedBy(30.dp),
         horizontalArrangement = Arrangement.spacedBy(30.dp),
         columns = GridCells.Adaptive(80.dp)){
-        items(cardList,key = {it.id}){ card ->
+        items(cardList, key = {"${it.type}/${it.id}"}){ card ->
             var globalPosition by remember { mutableStateOf(Offset.Zero) }
             Row(modifier = Modifier.onGloballyPositioned {
                 globalPosition = it.positionInParent()

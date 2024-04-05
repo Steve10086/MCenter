@@ -63,7 +63,7 @@ fun LinkSetting(
                     SSH_LINK.getName() ->{
                         TextCompat(
                             titleText = "port: ",
-                            value = info.getOrDefault("port", defaultValue = ""),
+                            value = info.getOrDefault("port", defaultValue = "22"),
                             onValueChange = {info["port"] = it}
                         )
                         TextCompat(
@@ -89,8 +89,22 @@ fun LinkSetting(
                     } else {
                         onComplete.invoke(
                             when(type){
-                                WEB_LINK.getName() -> WebLink(0, name, parentId, info.getOrDefault("address", ""))
-                                SSH_LINK.getName() -> SSHLink(0, name, parentId, info.getOrDefault("port", ""))
+                                WEB_LINK.getName()
+                                -> WebLink(
+                                    link.id,
+                                    name,
+                                    parentId,
+                                    info.getOrDefault("address", ""))
+
+                                SSH_LINK.getName()
+                                -> SSHLink(
+                                    id = link.id,
+                                    name = name,
+                                    parent = parentId,
+                                    info = info.getOrDefault("port", "22"),
+                                    username = info.getOrDefault("user", ""),
+                                    password = info.getOrDefault("pass", ""))
+
                                 else -> throw IllegalArgumentException("illegal link type!")
                             })
                     }

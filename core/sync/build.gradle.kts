@@ -9,6 +9,7 @@ android{
 
 dependencies {
     implementation(project(":core:network"))
+    implementation(project(":core:data"))
     kapt(libs.hilt.ext.compiler)
 
     implementation(libs.androidx.work.ktx)

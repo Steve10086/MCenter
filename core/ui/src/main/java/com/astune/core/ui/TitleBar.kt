@@ -1,9 +1,11 @@
 package com.astune.core.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,14 +20,20 @@ fun TitleBar(
     leftBtn: @Composable (Modifier) -> Unit = {},
     rightBtn: @Composable (Modifier) -> Unit = {},
 ){
-    Surface (modifier = modifier.height(60.dp).fillMaxWidth(),
+    Surface (modifier = modifier.
+        height(TitleBarHeight + with(LocalDensity.current){
+            WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
+        },
+    ).fillMaxWidth(),
         color = MaterialTheme.colorScheme.inverseOnSurface,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         ConstraintLayout(modifier = modifier.fillMaxSize()) {
             val (left, right, titleT) = createRefs()
 
-            Text(text = title,
+
+            Text(
+                text = title,
                 fontSize = 24.sp,
                 fontStyle = FontStyle.Italic,
                 modifier = modifier.constrainAs(titleT){
@@ -90,6 +98,17 @@ fun ButtonTitlebar(
         })
 }
 
+@Composable
+fun ColumnWithTitleBarSpacer(@SuppressLint("ModifierParameter") modifier: Modifier = Modifier.fillMaxSize(), content: @Composable ()->Unit = {}){
+    Column(modifier) {
+        TitleBarSpacer()
+        content()
+    }
+}
+
+@Composable
+fun TitleBarSpacer() = Spacer(Modifier.statusBarsPadding().height(TitleBarHeight))
+
 
 @ThemePreview
 @Composable
@@ -98,3 +117,5 @@ fun TitleBarPreview(){
         ButtonTitlebar()
     }
 }
+
+public val TitleBarHeight = 35.dp

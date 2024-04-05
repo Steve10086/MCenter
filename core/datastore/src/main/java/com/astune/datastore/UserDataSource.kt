@@ -14,7 +14,8 @@ class UserDataSource @Inject constructor(
             email = it.email,
             enabledZerotier = it.enableZerotier,
             zerotierPass = it.zerotierPass,
-            theme = it.theme
+            theme = it.theme,
+            sshTheme = it.sshTheme
             )
     }
 
@@ -27,6 +28,7 @@ class UserDataSource @Inject constructor(
                 setEnableZerotier(userInfo.enabledZerotier).
                 setName(userInfo.name).
                 setTheme(userInfo.theme).
+                setSshTheme(userInfo.sshTheme).
                 setZerotierPass(userInfo.zerotierPass)
             .build()
         }
@@ -38,6 +40,16 @@ class UserDataSource @Inject constructor(
             toBuilder().
             clearTheme().
             setTheme(theme).
+            build()
+        }
+    }
+
+    suspend fun setSshTheme(theme:String){
+        dataStore.updateData {
+            it.
+            toBuilder().
+            clearSshTheme().
+            setSshTheme(theme).
             build()
         }
     }
