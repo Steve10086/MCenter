@@ -12,12 +12,22 @@ android {
         pickFirst 'META-INF/DEPENDENCIES'
     }
 
+    buildTypes{
+        debug{
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            buildConfigField "boolean", "IS_DEBUG_BUILD", "true"
+            resValue "string", "app_name", "MCenter-debug"
+        }
+    }
+
+
     defaultConfig {
         applicationId "com.astune.mcenter"
         minSdk 27
         targetSdk 33
         versionCode 1
-        versionName "1.2.0"
+        versionName "1.2.1"
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled(true)
 

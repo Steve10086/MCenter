@@ -8,7 +8,7 @@ import androidx.navigation.*
 import androidx.navigation.compose.composable
 import com.astune.core.ui.ColumnWithTitleBarSpacer
 import com.astune.link.LinkPanel
-import com.astune.link.subPanels.WebLinkPage
+import com.astune.browser.WebLinkPage
 import com.astune.sshclient.SshClientPanel
 
 fun NavGraphBuilder.linkGraph(navController: NavController){

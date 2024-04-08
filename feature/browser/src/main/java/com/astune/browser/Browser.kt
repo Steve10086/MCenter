@@ -1,4 +1,4 @@
-package com.astune.link.subPanels
+package com.astune.browser
 
 import android.util.Log
 import android.webkit.WebSettings
@@ -14,8 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.astune.core.ui.TitleBarHeight
 import com.astune.core.ui.design.MCenterTheme
 import com.astune.core.ui.design.ThemePreview
 import com.google.accompanist.web.AccompanistWebChromeClient
@@ -27,11 +30,14 @@ import com.google.accompanist.web.rememberWebViewState
 fun WebLinkPage(
     uri:String,
     onExit: () -> Unit,
+    viewModel: BrowserViewModel = hiltViewModel()
 ){
+    val isUriReachable = viewModel.isURLReachable(uri.substringBefore(":"))
     WebViewScreen(
         uri = uri,
         onCreate = { initSetting(it) },
-        onExit = onExit
+        onExit = onExit,
+        isUriReachable = isUriReachable
     )
 }
 
@@ -40,6 +46,7 @@ fun WebViewScreen(
     uri:String = "",
     onCreate: (WebView) -> Unit = {},
     onExit: () -> Unit = {},
+    isUriReachable: Boolean = true
 ){
 
     val navigator = rememberWebViewNavigator()
@@ -49,14 +56,11 @@ fun WebViewScreen(
         var progress by remember { mutableFloatStateOf(0f) }
         var titleText by remember { mutableStateOf("Loading...$progress%") }
 
-        Column {
-
-            Surface(modifier = Modifier.height(60.dp).fillMaxWidth(),
-                color = MaterialTheme.colorScheme.inverseOnSurface) {
+        Column(modifier = Modifier.background(MaterialTheme.colorScheme.inverseOnSurface)) {
+            Surface(modifier = Modifier.statusBarsPadding().height(TitleBarHeight).fillMaxWidth(),
+                color = Color.Transparent
+            ) {
                 Column {
-                    Spacer(
-                        modifier = Modifier.height(15.dp)
-                    )
                     Row (modifier = Modifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
@@ -68,7 +72,6 @@ fun WebViewScreen(
                         }
                         Box(modifier = Modifier
                             .fillMaxWidth(0.85f)
-                            .height(35.dp)
                             .background(MaterialTheme.colorScheme.outlineVariant),
                             contentAlignment = Alignment.CenterStart){
                             Text(titleText,
@@ -98,29 +101,32 @@ fun WebViewScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), progress = progress)
             }
 
-            Box(){
-                val chromeClient = object : AccompanistWebChromeClient() {
-                    override fun onProgressChanged(view: WebView?, newProgress: Int) { // bind the loading progressBar
-                        Log.i("webPage", "Loading...${newProgress}")
-                        progress = newProgress / 100f
+            if(isUriReachable){
+                Box(){
+                    Log.d("WEB", "loading webview")
+                    val chromeClient = object : AccompanistWebChromeClient() {
+                        override fun onProgressChanged(view: WebView?, newProgress: Int) { // bind the loading progressBar
+                            Log.i("webPage", "Loading...${newProgress}")
+                            progress = newProgress / 100f
+                        }
+                        override fun onReceivedTitle(view: WebView?, title: String?) { // bind the web title
+                            super.onReceivedTitle(view, title)
+                            Log.i("webPage",title.toString())
+                            titleText = title?:"Loading"
+                        }
                     }
-                    override fun onReceivedTitle(view: WebView?, title: String?) { // bind the web title
-                        super.onReceivedTitle(view, title)
-                        Log.i("webPage",title.toString())
-                        titleText = title?:"Loading"
-                    }
-                }
 
-                WebView(
-                    modifier = Modifier.fillMaxSize(),
-                    captureBackPresses = true,
-                    state = rememberWebViewState(uri),
-                    navigator = navigator,
-                    chromeClient = chromeClient,
-                    onCreated = {
-                        onCreate.invoke(it)
-                    },
-                )
+                    WebView(
+                        modifier = Modifier.fillMaxSize(),
+                        captureBackPresses = true,
+                        state = rememberWebViewState(uri),
+                        navigator = navigator,
+                        chromeClient = chromeClient,
+                        onCreated = {
+                            onCreate.invoke(it)
+                        },
+                    )
+                }
             }
 
         }
@@ -133,14 +139,10 @@ fun initSetting(webView: WebView){
     settings.blockNetworkLoads = false
 
     //appearance
-
-    //appearance
     settings.builtInZoomControls = true
     settings.useWideViewPort = true
     settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS
     settings.loadWithOverviewMode = true
-
-    //accessibility
 
     //accessibility
     settings.javaScriptEnabled = true

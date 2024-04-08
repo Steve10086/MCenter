@@ -5,14 +5,13 @@ import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-internal suspend fun averagePing(url: String, timeout: Int): Double {
-    return ping(url, time = 4, timeout = timeout)
+internal suspend fun averagePing(url: String, timeout: Int, times:Int = 4): Double {
+    return ping(url, timeout = timeout, time = times)
         .also {
             Log.i("Ping", it.toString())
         }.takeIf { it.size > 5 }?.subList(1, 3)?.map{ result ->
             (Regex("""\d+\.\d+(?= ?ms)""").find(result)?.value?:"-1").toDouble()
         }?.average() ?: -1.0
-
 }
 
 internal suspend fun ping(url: String, timeout: Int, time: Int): List<String> {

@@ -16,4 +16,8 @@ class NetWorkRepository @Inject constructor(
     suspend fun getAveragePing(url: String, timeout: Int): Flow<Double> {
         return flow{emit(averagePing(url, timeout))}.flowOn(ioDispatcher)
     }
+
+    suspend fun isReachable(url: String, timeout: Int): Flow<Boolean>{
+        return flow{emit((averagePing(url, timeout, times = 4) != (-1).toDouble()))}.flowOn(ioDispatcher)
+    }
 }

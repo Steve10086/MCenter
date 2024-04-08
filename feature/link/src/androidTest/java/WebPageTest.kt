@@ -1,6 +1,6 @@
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import com.astune.link.subPanels.WebLinkPage
+import com.astune.browser.WebLinkPage
 import org.junit.Rule
 import org.junit.Test
 

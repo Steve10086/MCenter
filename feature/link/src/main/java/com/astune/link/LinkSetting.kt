@@ -55,7 +55,7 @@ fun LinkSetting(
                     WEB_LINK.getName() ->{
                         TextCompat(
                             titleText = "Address: ",
-                            value = info.getOrDefault("address", defaultValue = ""),
+                            value = info.getOrDefault("address", defaultValue = "80"),
                             onValueChange = {info["address"] = it}
                         )
                     }
