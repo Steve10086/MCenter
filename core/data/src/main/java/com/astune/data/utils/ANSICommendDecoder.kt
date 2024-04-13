@@ -1,15 +1,11 @@
 package com.astune.data.utils
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import com.astune.model.ssh.Action
-import com.astune.model.ssh.ShellContent
 import com.astune.model.ssh.ShellFunctionParam
 import com.astune.model.ssh.ShellFunctionParam.Companion.NEGATIVE_INF
 import kotlin.math.max
@@ -191,57 +187,6 @@ internal fun getPureText(text: String):String{
         it != '\u001b'
     }
     return string.removeSuffix("\u001b").toString()
-}
-
-fun execMovePointerAbs(content: ShellContent, x:Int? = null, y:Int? = null){
-    content.movePointerAbs(x?.minus(1), y?.zeroOrMinusOne()?.plus(content.bounds.first))
-}
-
-fun execDeleteLine(content: ShellContent, commend:Int){
-    when(commend){
-        0 -> {
-            content.delete(content.pointer.second + 1..content.bounds.second)
-            execDelete(content, 0)
-        }
-        1 -> content.delete(content.bounds.first..content.pointer.second)
-        2 -> content.delete(content.bounds.first..content.bounds.second)
-        3 -> content.delete(0 until content.content.size)
-    }
-}
-
-fun execDelete(content: ShellContent, commend:Int){
-    when(commend){
-        0 -> content.deleteLine(content.pointer.second, content.pointer.first + 1..content.currentLineLength() + 1)
-        1 -> content.deleteLine(content.pointer.second, 0..content.pointer.first)
-        2 -> content.delete(content.pointer.second..content.pointer.second)
-    }
-}
-
-fun execScroll(content: ShellContent, commend:Int){
-    content.moveBounds(content.bounds.first + commend, content.bounds.second + commend)
-}
-
-fun rendText(text:String, style: SpanStyle): AnnotatedString{
-    return buildAnnotatedString {
-        withStyle(
-            style = style
-        ){
-            append(text)
-        }
-    }
-}
-
-
-fun ANSIToStyle(
-    params:ShellFunctionParam,
-    style: SpanStyle = SpanStyle()
-):SpanStyle{
-    when (params.size){
-        1 -> return singleParamStyles(params[0], style)
-        3 -> return tripleParamStyles(params, style)
-        5 -> return rgbStyles(params, style)
-    }
-    return style
 }
 
 fun singleParamStyles(

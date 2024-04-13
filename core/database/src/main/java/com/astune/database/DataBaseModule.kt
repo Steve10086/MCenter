@@ -23,6 +23,7 @@ class DataBaseModule {
         "MCenterDB"
     ).addMigrations(
         DatabaseMigration.MIGRATION_1_2,
-        DatabaseMigration.MIGRATION_2_3
+        DatabaseMigration.MIGRATION_2_3,
+        DatabaseMigration.MIGRATION_3_4,
     ).build()
 }

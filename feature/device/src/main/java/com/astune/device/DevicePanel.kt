@@ -3,6 +3,8 @@ package com.astune.device
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
@@ -44,7 +46,7 @@ fun DevicePanel(
         insertDevice = { device ->  deviceViewModel.insert(device) },
         editDevice = { device ->  deviceViewModel.insert(device) },
         onRefresh = {
-            deviceViewModel.ping(devices.getIp())
+            deviceViewModel.ping(devices.filter { it.enableDelay == 1}.getIp())
             Log.i("Device", "refreshed")
         }
     )
@@ -196,30 +198,49 @@ fun DeviceSetting(
 ){
     var name by remember { mutableStateOf(device.name) }
     var ip by remember { mutableStateOf(device.ip) }
+    var enableDelayDetection by remember { mutableStateOf(device.enableDelay == 1) }
     val context = LocalContext.current
 
     Surface(modifier = Modifier.size(width = 300.dp, height = 200.dp), shape = AlertDialogDefaults.shape) {
-        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.SpaceEvenly){
-            TextCompat(
-                titleText = "Name: ",
-                value = name,
-                onValueChange = {
-                    name = it
+        Column(){
+            Column(
+                modifier = Modifier
+                    .height(140.dp)
+                    .padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 0.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.SpaceEvenly
+            ){
+                TextCompat(
+                    titleText = "Name: ",
+                    value = name,
+                    onValueChange = {name = it}
+                )
+                TextCompat(
+                    titleText = "Address: ",
+                    value = ip,
+                    onValueChange = {ip = it}
+                )
+                Row(modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,){
+                    Text(
+                        text = "${if (enableDelayDetection) "disable" else "enable"} auto delay detection ",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Checkbox(
+                        checked = enableDelayDetection,
+                        onCheckedChange = {enableDelayDetection = it}
+                    )
                 }
-            )
-            TextCompat(
-                titleText = "Address: ",
-                value = ip,
-                onValueChange = {ip = it}
-            )
-            Spacer(modifier = Modifier.height(5.dp))
-            Row (modifier = Modifier.fillMaxWidth(),
+            }
+            Row (modifier = Modifier.fillMaxWidth().padding(10.dp, vertical = 0.dp),
                 horizontalArrangement = Arrangement.SpaceBetween){
                 Button(onClick = {
                     if(name == "" || ip == ""){
                         Toast.makeText(context, "empty name or ip", Toast.LENGTH_SHORT).show()
                     } else {
-                        onComplete.invoke(Device(device.id, name, ip, null))
+                        onComplete.invoke(Device(device.id, name, ip, null,
+                            enableDelay = if(enableDelayDetection) 1 else 0))
                     }
                 }
                 ){

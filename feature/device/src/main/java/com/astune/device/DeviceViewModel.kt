@@ -53,10 +53,10 @@ class DeviceViewModel @Inject constructor(
                 syncManager.getLastPing().collect(){
                     //Log.i("DeviceVM", "getting Delay!")
                     devices.setLoading(true)
-                    for(device in devices){
+                    for(device in devices.filter { it.enableDelay == 1 }){
                         var delay = "-1"
 
-                        if(it.state == WorkInfo.State.RUNNING){
+                        if(it != null && it.state == WorkInfo.State.RUNNING){
                             delay = it.progress.getInt(device.ip, -2).toString()
                         }else{
                             deviceDataRepository.getDeviceDelay(device.id).collect{value ->
@@ -121,6 +121,7 @@ fun List<Device>.getIp():List<String>{
 
 internal fun List<Device>.setLoading(state:Boolean){
     for(device in this@setLoading){
-        device.loading = state
+        if(device.enableDelay == 1)
+            device.loading = state
     }
 }

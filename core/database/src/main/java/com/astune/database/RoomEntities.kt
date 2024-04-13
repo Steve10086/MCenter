@@ -22,6 +22,8 @@ data class Device(
 
     @ColumnInfo (name = "last_delay") var latestDelay: String? = null,
 
+    @ColumnInfo (name = "enable_delay") var enableDelay: Int = 1,
+
     ) {
     @get:Ignore
     var delay by mutableStateOf("")

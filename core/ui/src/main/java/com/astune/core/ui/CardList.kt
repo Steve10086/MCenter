@@ -76,24 +76,25 @@ fun DeviceCard (device: Device,
                     top.linkTo(name.bottom, 2.dp)
                     start.linkTo(parent.start, 15.dp)
                 })
-                if (device.loading){
-                    CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp).constrainAs(lastOnline){
-                            bottom.linkTo(parent.bottom, 10.dp)
-                            start.linkTo(parent.start, 15.dp)
-                        }
-                    )
-                }else{
-                    Text(
-                        if(device.delay == "") "offline" else device.delay,
-                        Modifier.constrainAs(lastOnline) {
-                            bottom.linkTo(parent.bottom, 10.dp)
-                            start.linkTo(parent.start, 15.dp)
-                        })
+                if(device.enableDelay == 1){
+                    if (device.loading){
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp).constrainAs(lastOnline){
+                                bottom.linkTo(parent.bottom, 10.dp)
+                                start.linkTo(parent.start, 15.dp)
+                            }
+                        )
+                    }else{
+                        Text(
+                            if(device.delay == "") "offline" else device.delay,
+                            Modifier.constrainAs(lastOnline) {
+                                bottom.linkTo(parent.bottom, 10.dp)
+                                start.linkTo(parent.start, 15.dp)
+                            })
+                    }
                 }
-
 
                 Button(onClick = { onButtonClick(device) }, Modifier
                     .constrainAs(infoBtn) {

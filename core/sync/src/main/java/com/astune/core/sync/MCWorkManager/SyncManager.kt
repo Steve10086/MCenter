@@ -31,8 +31,11 @@ class SyncManager @Inject constructor(
         )
     }
 
-    fun getLastPing(): Flow<WorkInfo> = workManager.getWorkInfosForUniqueWorkFlow(PingSyncName).map {
-        return@map it[0]
+    fun getLastPing(): Flow<WorkInfo?> = workManager.getWorkInfosForUniqueWorkFlow(PingSyncName).map {
+        if(it.size > 0)
+            return@map it[0]
+        else
+            return@map null
     }
 
     fun doSinglePing(ip: List<String>): Flow<WorkInfo> {

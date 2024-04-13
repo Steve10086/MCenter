@@ -44,11 +44,6 @@ enum class CustomKey(
     Right(
         id = "right",
         text = "▶"
-    ),
-
-    TestRight(
-        id = "test",
-        text = ">"
     )
 }
 
@@ -66,7 +61,6 @@ enum class CustomKeyLists(
             CustomKey.Down,
             CustomKey.Left,
             CustomKey.Right,
-            CustomKey.TestRight,
         )
     )
 }

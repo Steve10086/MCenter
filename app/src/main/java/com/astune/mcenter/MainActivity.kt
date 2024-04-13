@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         lifecycleScope.launch {
             viewModel.device.collect() {
-                syncManager.pingSync(it.getIp())
+                syncManager.pingSync(it.filter { it.enableDelay == 1 }.getIp())
             }
             Log.d("Main", "Sync start")
         }

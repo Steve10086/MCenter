@@ -88,11 +88,8 @@ enum class Action(
     SET_PASTE,
 }
 
-//TODO:remove size attribute
 data class ShellFunctionParam(
     var params:MutableList<Int>,
-    var size:Int = params.size
-
 ){
     companion object{
         const val INVALID_PARAM = -2

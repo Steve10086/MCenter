@@ -18,4 +18,9 @@ object DatabaseMigration {
             database.execSQL("ALTER TABLE sshlink ADD COLUMN password TEXT NOT NULL")
         }
     }
+    val MIGRATION_3_4: Migration = object :Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE device ADD COLUMN enable_delay INT NOT NULL DEFAULT 1")
+        }
+    }
 }

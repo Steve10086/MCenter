@@ -41,14 +41,14 @@ fun TextCompat(
             singleLine = singleLine,
             enabled = enabled,
         ) { innerTextField ->
-            TextFieldDefaults.TextFieldDecorationBox(
-                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+            TextFieldDefaults.DecorationBox(
                 value = value,
                 innerTextField = innerTextField,
-                visualTransformation = VisualTransformation.None,
-                singleLine = singleLine,
                 enabled = enabled,
+                singleLine = singleLine,
+                visualTransformation = VisualTransformation.None,
                 interactionSource = interactionSource,
+                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                 contentPadding = contentPadding,
             )
         }
